@@ -1,43 +1,44 @@
-# 🍰 Bakery — Onlayn tort kataloqu (MVP)
+# 🍰 Bakery — Online cake catalog (MVP)
 
-Müştəri qeydiyyatı, səbət və onlayn ödəniş **yoxdur**. Müştəri kataloqa baxır,
-məhsulun detalını açır və WhatsApp/Telegram düyməsi ilə sifarişi çat üzərindən
-tamamlayır. JWT login və məhsul CRUD **yalnız admin paneli** üçündür.
+There is **no** customer registration, cart or online payment. A customer browses
+the catalog, opens a product detail page and completes the order over chat via
+the WhatsApp/Telegram button. JWT login and product CRUD exist **only for the
+admin panel**.
 
 ```
 Bakery/
-├── backend/    # NestJS + TypeORM + PostgreSQL  → :4000
-├── frontend/   # Öndəki sayt (almanca/ingiliscə) → :3000
-└── admin/      # İdarəetmə paneli, ayrıca tətbiq  → :3002
+├── backend/    # NestJS + TypeORM + PostgreSQL   → :4000
+├── frontend/   # Public site (German/English)    → :3000
+└── admin/      # Admin panel, separate app       → :3002
 ```
 
-Admin paneli **ayrıca Next.js tətbiqidir**: saytdan ona heç bir link yoxdur,
-öz portunda işləyir və ayrıca deploy olunur. Hər üçü eyni backend-ə bağlanır.
+The admin panel is a **separate Next.js app**: the site links to it nowhere, it
+runs on its own port and is deployed separately. All three talk to the same backend.
 
 
 ## API
 
-| Metod  | Endpoint                  | Qoruma   | Təsvir                       |
-| ------ | ------------------------- | -------- | ---------------------------- |
-| POST   | `/api/auth/login`         | —        | JWT token qaytarır           |
-| GET    | `/api/auth/me`            | JWT      | Token yoxlaması              |
-| GET    | `/api/products`           | —        | Yalnız `is_active: true`     |
-| GET    | `/api/products/:id`       | —        | Məhsul detalı                |
-| GET    | `/api/products/admin/all` | JWT      | Gizlilər də daxil            |
-| POST   | `/api/products`           | JWT      | Yeni məhsul                  |
-| PUT    | `/api/products/:id`       | JWT      | Yeniləmə                     |
-| DELETE | `/api/products/:id`       | JWT      | Silmə                        |
+| Method | Endpoint                  | Auth | Description                  |
+| ------ | ------------------------- | ---- | ---------------------------- |
+| POST   | `/api/auth/login`         | —    | Returns a JWT token          |
+| GET    | `/api/auth/me`            | JWT  | Token validation             |
+| GET    | `/api/products`           | —    | Only `is_active: true`       |
+| GET    | `/api/products/:id`       | —    | Product detail               |
+| GET    | `/api/products/admin/all` | JWT  | Includes hidden products     |
+| POST   | `/api/products`           | JWT  | Create product               |
+| PUT    | `/api/products/:id`       | JWT  | Update                       |
+| DELETE | `/api/products/:id`       | JWT  | Delete                       |
 
-## İşə salma
+## Getting started
 
 **Backend**
 
 ```bash
 cd backend
-cp .env.example .env          # DB məlumatlarını doldurun
+cp .env.example .env          # fill in your database credentials
 npm install
-npm run seed                  # cədvəlləri qurur + ilk admini yaradır
-npm run seed:products         # 6 nümunə tort əlavə edir (istəyə bağlı)
+npm run seed                  # creates the tables + the first admin user
+npm run seed:products         # adds 6 sample cakes (optional)
 npm run start:dev             # http://localhost:4000/api
 ```
 
@@ -50,7 +51,7 @@ npm install
 npm run dev                   # http://localhost:3000
 ```
 
-**Admin paneli**
+**Admin panel**
 
 ```bash
 cd admin
@@ -59,30 +60,30 @@ npm install
 npm run dev                   # http://localhost:3002
 ```
 
-Giriş: `http://localhost:3002/login` (`.env`-dəki ADMIN_USERNAME / ADMIN_PASSWORD).
+Login: `http://localhost:3002/login` (ADMIN_USERNAME / ADMIN_PASSWORD from `.env`).
 
-## Konfiqurasiya
+## Configuration
 
-Brend adı, WhatsApp nömrəsi və sosial linklər tək mərkəzdən idarə olunur:
-[app.config.ts](frontend/src/config/app.config.ts). Dəyərlər `.env.local`-dan
-oxunur (`NEXT_PUBLIC_APP_NAME`, `NEXT_PUBLIC_WHATSAPP_NUMBER` və s.), env yoxdursa
-default-lar işləyir.
+The brand name, WhatsApp number and social links are managed from a single place:
+[app.config.ts](frontend/src/config/app.config.ts). Values are read from
+`.env.local` (`NEXT_PUBLIC_APP_NAME`, `NEXT_PUBLIC_WHATSAPP_NUMBER`, etc.); when an
+env var is missing, the defaults apply.
 
 ```tsx
 import { appConfig, buildWhatsAppLink } from '@/config/app.config';
 
 <h1>{appConfig.name}</h1>
-<a href={buildWhatsAppLink(product.name)}>WhatsApp ilə sifariş</a>
+<a href={buildWhatsAppLink(product.name)}>Order via WhatsApp</a>
 ```
 
-## Dil
+## Language
 
-Saytdakı bütün istifadəçi mətnləri **almancadır** (`<html lang="de">`), backend-in
-xəta mesajları da daxil — çünki onlar birbaşa UI-da göstərilir. Kod şərhləri
-**ingiliscədir**. Yeni komponent yazanda bu ayrımı saxlayın.
+All user-facing copy on the site is **German** (`<html lang="de">`), including the
+backend's error messages — because those are shown directly in the UI. Code comments
+are **English**. Keep this split when writing new components.
 
-## Rəng palitrası
+## Color palette
 
 `primary` #452D19 (dark chocolate) · `secondary` #F5EBDD (beige/cream) ·
 `accent` #C67C3C (warm caramel) · `surface` #FBF6EF · `ink` #2E1D10.
-Tam şkala üçün [tailwind.config.js](frontend/tailwind.config.js).
+See [tailwind.config.js](frontend/tailwind.config.js) for the full scale.
