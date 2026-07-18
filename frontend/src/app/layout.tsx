@@ -5,10 +5,8 @@ import { getSettings } from '@/lib/api';
 import { getLocale } from '@/lib/locale';
 import { LocaleProvider } from './components/LocaleProvider';
 import ScrollProgress from './components/motion/ScrollProgress';
-import {
-  FALLBACK_SETTINGS,
-  SettingsProvider,
-} from './components/SettingsProvider';
+import { FALLBACK_SETTINGS } from '@/config/fallback-settings';
+import { SettingsProvider } from './components/SettingsProvider';
 import './globals.css';
 
 const sans = Inter({ subsets: ['latin'], variable: '--font-sans' });

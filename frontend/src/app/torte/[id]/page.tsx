@@ -12,7 +12,7 @@ import { getProduct, getProducts, getSettings } from '@/lib/api';
 import { getDictionary, getLocale } from '@/lib/locale';
 import type { Product } from '@/types/product';
 import AllergenBadge from '@/app/components/AllergenBadge';
-import { FALLBACK_SETTINGS } from '@/app/components/SettingsProvider';
+import { FALLBACK_SETTINGS } from '@/config/fallback-settings';
 import CatalogGrid from '@/app/components/CatalogGrid';
 import FadeIn from '@/app/components/FadeIn';
 import ProductGallery from '@/app/components/ProductGallery';

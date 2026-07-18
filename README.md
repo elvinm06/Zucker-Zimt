@@ -62,6 +62,39 @@ npm run dev                   # http://localhost:3002
 
 Login: `http://localhost:3002/login` (ADMIN_USERNAME / ADMIN_PASSWORD from `.env`).
 
+## Docker
+
+Brings up all four services (Postgres, API, storefront, admin panel):
+
+```bash
+docker compose up -d --build
+docker compose --profile seed run --rm seed   # admin user + 6 sample cakes
+```
+
+| Service  | URL                         |
+| -------- | --------------------------- |
+| Site     | `http://localhost:3000`     |
+| Admin    | `http://localhost:3002`     |
+| API      | `http://localhost:4000/api` |
+| Postgres | `localhost:5434`            |
+
+Postgres is published on **5434** because 5432 is usually taken by a local
+install; override it with `DB_EXPOSED_PORT`. Uploaded images live in the
+`uploads` volume and survive rebuilds.
+
+Two things to know when changing the setup:
+
+- `NEXT_PUBLIC_*` values are compiled into the client bundle, so they are passed
+  as **build args** in `docker-compose.yml` — setting them at runtime does nothing.
+- Server-side rendering reaches the API through `INTERNAL_API_URL`
+  (`http://backend:4000/api`), because inside the frontend container `localhost`
+  is that container, not the API.
+
+```bash
+docker compose down       # stop
+docker compose down -v    # stop and drop the database + uploads
+```
+
 ## Configuration
 
 The brand name, WhatsApp number and social links are managed from a single place:

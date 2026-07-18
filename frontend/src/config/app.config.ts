@@ -35,7 +35,16 @@ export const appConfig = {
   },
 
   api: {
-    baseUrl: process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api',
+    // Server-side rendering and the browser reach the API over different
+    // hostnames when the app runs in a container: "localhost" there means the
+    // frontend container itself. INTERNAL_API_URL (e.g. http://backend:4000/api)
+    // covers the server side; without it both fall back to the public URL.
+    baseUrl:
+      (typeof window === 'undefined'
+        ? process.env.INTERNAL_API_URL
+        : undefined) ??
+      process.env.NEXT_PUBLIC_API_URL ??
+      'http://localhost:4000/api',
   },
 } as const;
 

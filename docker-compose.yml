@@ -1,0 +1,113 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: ${DB_NAME:-bakery}
+    ports:
+      # 5434 on the host: 5432 and 5433 are taken by a local Postgres and by
+      # other projects' containers. Services inside the network still use 5432.
+      - '${DB_EXPOSED_PORT:-5434}:5432'
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      # The backend crashes on startup if Postgres is not accepting connections
+      # yet, so it waits for this to pass rather than for the container to exist.
+      test: ['CMD-SHELL', 'pg_isready -U ${DB_USERNAME:-postgres} -d ${DB_NAME:-bakery}']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: ./backend
+    environment:
+      PORT: 4000
+      NODE_ENV: production
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USERNAME: ${DB_USERNAME:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      DB_NAME: ${DB_NAME:-bakery}
+      DB_SYNCHRONIZE: 'true'
+      JWT_SECRET: ${JWT_SECRET:-dev-only-change-me}
+      JWT_EXPIRES_IN: 7d
+      SWAGGER_ENABLED: 'true'
+      # Origins allowed to call the API, and the origin used to build image URLs.
+      # These are browser-facing, so they are localhost — not the compose
+      # service names, which only resolve inside the network.
+      CORS_ORIGIN: http://localhost:3000,http://localhost:3002
+      PUBLIC_URL: http://localhost:4000
+    ports:
+      - '4000:4000'
+    volumes:
+      - uploads:/app/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:4000/api
+        NEXT_PUBLIC_APP_NAME: ${NEXT_PUBLIC_APP_NAME:-Zucker & Zimt}
+        NEXT_PUBLIC_APP_TAGLINE: ${NEXT_PUBLIC_APP_TAGLINE:-Handgemachte Torten — jeder Bissen ein kleines Fest}
+        NEXT_PUBLIC_WHATSAPP_NUMBER: ${NEXT_PUBLIC_WHATSAPP_NUMBER:-4915112345678}
+        NEXT_PUBLIC_TELEGRAM_USERNAME: ${NEXT_PUBLIC_TELEGRAM_USERNAME:-zuckerundzimt}
+        NEXT_PUBLIC_INSTAGRAM_URL: ${NEXT_PUBLIC_INSTAGRAM_URL:-https://instagram.com/zuckerundzimt}
+        NEXT_PUBLIC_CONTACT_PHONE: ${NEXT_PUBLIC_CONTACT_PHONE:-+49 151 1234 5678}
+        NEXT_PUBLIC_ADDRESS: ${NEXT_PUBLIC_ADDRESS:-Bäckerstraße 12, 10115 Berlin}
+        NEXT_PUBLIC_OPENING_HOURS: ${NEXT_PUBLIC_OPENING_HOURS:-Mo–Sa, 09:00 – 19:00 Uhr}
+        NEXT_PUBLIC_CURRENCY: ${NEXT_PUBLIC_CURRENCY:-EUR}
+        NEXT_PUBLIC_LOCALE: ${NEXT_PUBLIC_LOCALE:-de-DE}
+    environment:
+      # Server-side only, so these are read at runtime rather than baked in.
+      ADMIN_ORIGIN: http://localhost:3002
+      # SSR talks to the API over the compose network; the browser uses the
+      # localhost URL baked in above.
+      INTERNAL_API_URL: http://backend:4000/api
+    ports:
+      - '3000:3000'
+    depends_on:
+      - backend
+
+  admin:
+    build:
+      context: ./admin
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:4000/api
+        NEXT_PUBLIC_SITE_URL: http://localhost:3000
+        NEXT_PUBLIC_CURRENCY: ${NEXT_PUBLIC_CURRENCY:-EUR}
+        NEXT_PUBLIC_LOCALE: ${NEXT_PUBLIC_LOCALE:-de-DE}
+    ports:
+      - '3002:3002'
+    depends_on:
+      - backend
+
+  # One-off: creates the admin user and sample products.
+  #   docker compose --profile seed run --rm seed
+  # Built from the "builder" stage because the seeds run through ts-node, which
+  # is a devDependency the production image drops.
+  seed:
+    profiles: ['seed']
+    build:
+      context: ./backend
+      target: builder
+    command: sh -c 'npm run seed && npm run seed:products'
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USERNAME: ${DB_USERNAME:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      DB_NAME: ${DB_NAME:-bakery}
+      DB_SYNCHRONIZE: 'true'
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin123}
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  db-data:
+  uploads:

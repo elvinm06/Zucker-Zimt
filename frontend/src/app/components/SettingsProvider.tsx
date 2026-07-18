@@ -1,20 +1,8 @@
 'use client';
 
 import { createContext, useContext } from 'react';
-import { appConfig } from '@/config/app.config';
+import { FALLBACK_SETTINGS } from '@/config/fallback-settings';
 import type { SiteSettings } from '@/types/settings';
-
-/** Values from the database; falls back to the compiled-in defaults. */
-export const FALLBACK_SETTINGS: SiteSettings = {
-  name: appConfig.name,
-  tagline: appConfig.tagline,
-  whatsapp: appConfig.contact.whatsapp,
-  telegram: appConfig.contact.telegram,
-  instagram: appConfig.contact.instagram,
-  phone: appConfig.contact.phone,
-  address: appConfig.contact.address,
-  hours: appConfig.contact.hours,
-};
 
 const SettingsContext = createContext<SiteSettings>(FALLBACK_SETTINGS);
 
