@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+  <defs>
+    <mask id="cut" maskUnits="userSpaceOnUse" x="0" y="0" width="200" height="200">
+      <rect width="200" height="200" fill="white"/>
+      <path d="M28 112 L176 128" stroke="black" stroke-width="6"/>
+      <path d="M28 138 L176 154" stroke="black" stroke-width="6"/>
+      <path d="M76 74 L126 74" stroke="black" stroke-width="4"/>
+    </mask>
+  </defs>
+  <rect width="200" height="200" rx="44" fill="#FAF1E4"/>
+  <path d="M167.5 61 A78 78 0 1 0 170.7 133" stroke="#8A5F35" stroke-width="6" stroke-linecap="round"/>
+  <g fill="#5E3E23" mask="url(#cut)">
+    <path d="M45.2 94.4 L84 72 L122 72 L155.5 98.2 A56 56 0 1 1 45.2 94.4 Z"/>
+    <path d="M82 76 Q82 51 102 49 Q122 51 122 76 Z"/>
+    <path d="M101 51 Q95 32 112 21 Q121 34 113 46 Q107 53 101 51 Z"/>
+  </g>
+  <g fill="#5E3E23">
+    <path d="M127 67 Q133 47 155 43 Q148 63 127 67 Z" opacity="0.92"/>
+    <path d="M130 75 Q145 63 165 67 Q150 82 130 75 Z" opacity="0.78"/>
+  </g>
+</svg>

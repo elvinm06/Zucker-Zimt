@@ -1,0 +1,91 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Keeps anchor targets clear of the sticky header. */
+  section[id] {
+    scroll-margin-top: 6rem;
+  }
+
+  body {
+    @apply bg-surface text-ink antialiased;
+    /* Very subtle warm grain so large cream areas do not look flat. */
+    background-image: radial-gradient(
+        circle at 15% 10%,
+        rgba(232, 184, 136, 0.16),
+        transparent 45%
+      ),
+      radial-gradient(circle at 85% 0%, rgba(214, 184, 150, 0.14), transparent 40%);
+    background-attachment: fixed;
+  }
+
+  ::selection {
+    @apply bg-accent/25 text-primary;
+  }
+
+  h1,
+  h2,
+  h3 {
+    @apply font-display;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-chocolate-gradient px-7 py-3.5
+           font-medium text-cream-100 shadow-soft transition-all duration-300
+           hover:-translate-y-0.5 hover:shadow-lift active:translate-y-0 active:scale-[0.98]
+           disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-full border border-chocolate-200/70
+           bg-cream-50/60 px-7 py-3.5 font-medium text-primary backdrop-blur transition-all duration-300
+           hover:-translate-y-0.5 hover:border-accent/60 hover:bg-cream-200 hover:shadow-soft;
+  }
+
+  .input-field {
+    @apply w-full rounded-2xl border border-chocolate-100 bg-cream-50/80 px-4 py-3 text-ink
+           shadow-inset outline-none transition placeholder:text-muted/70
+           focus:border-accent focus:bg-cream-50 focus:ring-4 focus:ring-accent/15;
+  }
+
+  .card {
+    @apply rounded-3xl border border-cream-300/70 bg-cream-50/90 shadow-soft backdrop-blur-sm;
+  }
+
+  /* Small uppercase label above section headings. */
+  .eyebrow {
+    @apply inline-flex items-center gap-2 rounded-full border border-cream-300 bg-cream-50/80
+           px-4 py-1.5 text-[11px] uppercase tracking-[0.2em] text-chocolate-500 shadow-soft;
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full bg-cream-200/80 px-3 py-1.5
+           text-sm text-chocolate-600 ring-1 ring-inset ring-cream-300/80;
+  }
+
+  /* Decorative soft blob used behind hero and CTA sections. */
+  .blob {
+    @apply pointer-events-none absolute rounded-full blur-3xl;
+  }
+}
+
+/* Respect users who prefer reduced motion. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
