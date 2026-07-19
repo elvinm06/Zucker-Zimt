@@ -12,11 +12,18 @@ import { Settings } from '../settings/entities/settings.entity';
  * use migrations in production.
  */
 export const typeOrmConfig = (): TypeOrmModuleOptions => {
+  // Managed hosts (Render, Heroku, Neon) require TLS on external
+  // connections but serve a certificate the default CA bundle doesn't
+  // verify — hence rejectUnauthorized: false.
+  const ssl =
+    process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : undefined;
+
   const common = {
     type: 'postgres' as const,
     entities: [Product, User, Settings],
     synchronize: process.env.DB_SYNCHRONIZE === 'true',
     logging: process.env.NODE_ENV !== 'production',
+    ...(ssl ? { ssl } : {}),
   };
 
   if (process.env.DATABASE_URL) {
