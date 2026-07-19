@@ -1,9 +1,9 @@
 import 'reflect-metadata';
 import * as dotenv from 'dotenv';
-import { DataSource } from 'typeorm';
+import { DataSource, DataSourceOptions } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { User } from '../../auth/entities/user.entity';
-import { Product } from '../../products/entities/product.entity';
+import { typeOrmConfig } from '../typeorm.config';
 
 dotenv.config();
 
@@ -12,14 +12,12 @@ dotenv.config();
  * Credentials come from ADMIN_USERNAME / ADMIN_PASSWORD in `.env`.
  */
 async function seed() {
+  // Reuses the app's connection settings so DATABASE_URL and DB_SSL work
+  // here too — the seed is often run against a remote database.
+  // synchronize is forced on: the seed must be able to create the tables
+  // it writes into on a fresh database.
   const dataSource = new DataSource({
-    type: 'postgres',
-    host: process.env.DB_HOST ?? 'localhost',
-    port: parseInt(process.env.DB_PORT ?? '5432', 10),
-    username: process.env.DB_USERNAME ?? 'postgres',
-    password: process.env.DB_PASSWORD ?? 'postgres',
-    database: process.env.DB_NAME ?? 'bakery',
-    entities: [User, Product],
+    ...(typeOrmConfig() as DataSourceOptions),
     synchronize: true,
   });
 

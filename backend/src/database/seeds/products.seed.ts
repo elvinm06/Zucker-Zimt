@@ -1,8 +1,8 @@
 import 'reflect-metadata';
 import * as dotenv from 'dotenv';
-import { DataSource } from 'typeorm';
-import { User } from '../../auth/entities/user.entity';
+import { DataSource, DataSourceOptions } from 'typeorm';
 import { Product } from '../../products/entities/product.entity';
+import { typeOrmConfig } from '../typeorm.config';
 
 dotenv.config();
 
@@ -68,14 +68,9 @@ const DEMO_PRODUCTS: Partial<Product>[] = [
 ];
 
 async function seed() {
+  // See admin.seed.ts — shares the app's connection settings.
   const dataSource = new DataSource({
-    type: 'postgres',
-    host: process.env.DB_HOST ?? 'localhost',
-    port: parseInt(process.env.DB_PORT ?? '5432', 10),
-    username: process.env.DB_USERNAME ?? 'postgres',
-    password: process.env.DB_PASSWORD ?? 'postgres',
-    database: process.env.DB_NAME ?? 'bakery',
-    entities: [User, Product],
+    ...(typeOrmConfig() as DataSourceOptions),
     synchronize: true,
   });
 
