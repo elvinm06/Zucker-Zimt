@@ -84,19 +84,6 @@ export default async function ProductPage({
           className="btn-ghost w-fit px-5 py-2.5 text-sm"
           aria-label={t.backToOverview}
         >
-          <svg
-            aria-hidden
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="h-4 w-4"
-          >
-            <path d="M19 12H5" />
-            <path d="m12 19-7-7 7-7" />
-          </svg>
           {t.backToOverview}
         </Link>
 
