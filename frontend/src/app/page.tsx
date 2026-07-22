@@ -2,6 +2,7 @@ import { getProducts } from '@/lib/api';
 import { getDictionary } from '@/lib/locale';
 import type { Product } from '@/types/product';
 import CatalogGrid from './components/CatalogGrid';
+import { SearchProvider } from './components/SearchProvider';
 import ContactCTA from './components/ContactCTA';
 import FeatureStrip from './components/FeatureStrip';
 import Footer from './components/Footer';
@@ -28,6 +29,7 @@ export default async function HomePage() {
   }
 
   return (
+    <SearchProvider>
     <main className="min-h-screen">
       <Header />
       <Hero />
@@ -67,5 +69,6 @@ export default async function HomePage() {
       <ContactCTA />
       <Footer />
     </main>
+    </SearchProvider>
   );
 }

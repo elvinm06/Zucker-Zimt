@@ -14,6 +14,7 @@ import {
 import { useSiteLang } from './LocaleProvider';
 import { useSettings } from './SettingsProvider';
 import AnimatedNumber from './AnimatedNumber';
+import CakeSearch from './CakeSearch';
 import Magnetic from './motion/Magnetic';
 import { EASE } from './motion/Reveal';
 import SplitText from './motion/SplitText';
@@ -196,6 +197,14 @@ export default function Hero() {
             </Magnetic>
           </motion.div>
 
+          {/* Search the catalogue by cake name. */}
+          <motion.div
+            variants={fadeUp}
+            className="mt-6 flex justify-center lg:justify-start"
+          >
+            <CakeSearch />
+          </motion.div>
+
           <motion.dl
             variants={fadeUp}
             className="mt-12 grid grid-cols-3 gap-4 border-t border-cream-300/80 pt-8"
@@ -305,20 +314,6 @@ export default function Hero() {
             </motion.div>
           </div>
         </motion.div>
-      </motion.div>
-
-      {/* Scroll hint fades away as soon as the user starts scrolling. */}
-      <motion.div
-        style={prefersReduced ? undefined : { opacity: heroFade }}
-        className="pointer-events-none absolute bottom-6 left-1/2 hidden -translate-x-1/2 lg:block"
-      >
-        <motion.span
-          animate={prefersReduced ? {} : { y: [0, 9, 0] }}
-          transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut' }}
-          className="block text-xs uppercase tracking-[0.2em] text-muted/70"
-        >
-          {t.scrollHint}
-        </motion.span>
       </motion.div>
     </section>
   );

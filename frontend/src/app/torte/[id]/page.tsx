@@ -78,7 +78,28 @@ export default async function ProductPage({
     <main className="min-h-screen">
       <Header />
 
-      <div className="mx-auto max-w-6xl px-5 pb-8 pt-8">
+      <div className="mx-auto flex max-w-6xl flex-col gap-4 px-5 pb-8 pt-8 sm:flex-row sm:items-center sm:justify-between">
+        <Link
+          href="/#katalog"
+          className="btn-ghost w-fit px-5 py-2.5 text-sm"
+          aria-label={t.backToOverview}
+        >
+          <svg
+            aria-hidden
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="h-4 w-4"
+          >
+            <path d="M19 12H5" />
+            <path d="m12 19-7-7 7-7" />
+          </svg>
+          {t.backToOverview}
+        </Link>
+
         <nav aria-label="Brotkrümelnavigation" className="text-sm text-muted">
           <Link href="/" className="transition hover:text-primary">
             {t.breadcrumbHome}

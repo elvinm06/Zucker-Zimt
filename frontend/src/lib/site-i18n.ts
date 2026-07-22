@@ -54,6 +54,9 @@ const de = {
   catalogTitle: 'Torten aus unserer Backstube',
   catalogLead:
     'Wählen Sie Ihre Lieblingstorte, prüfen Sie Zutaten und Allergene und schreiben Sie uns direkt — ganz ohne Anmeldung.',
+  searchPlaceholder: 'Torte nach Namen suchen …',
+  searchClear: 'Suche zurücksetzen',
+  searchNoResults: (q: string) => `Keine Torte für „${q}“ gefunden.`,
   catalogEmptyTitle: 'Noch keine Torten im Katalog',
   catalogEmptyText:
     'Wir stellen gerade unser Sortiment zusammen — schauen Sie bald wieder vorbei.',
@@ -165,6 +168,9 @@ const en: Dictionary = {
   catalogTitle: 'Cakes from our bakery',
   catalogLead:
     'Choose your favourite, check the ingredients and allergens, and message us directly — no sign-up needed.',
+  searchPlaceholder: 'Search cakes by name …',
+  searchClear: 'Clear search',
+  searchNoResults: (q: string) => `No cake found for “${q}”.`,
   catalogEmptyTitle: 'No cakes in the catalogue yet',
   catalogEmptyText:
     'We are putting our selection together — please check back soon.',
