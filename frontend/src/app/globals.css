@@ -21,7 +21,14 @@
         transparent 45%
       ),
       radial-gradient(circle at 85% 0%, rgba(214, 184, 150, 0.14), transparent 40%);
-    background-attachment: fixed;
+  }
+
+  /* A fixed background repaints on every scroll frame — on iOS Safari that
+     causes visible jank. Only pin it on larger, pointer-based screens. */
+  @media (min-width: 1024px) {
+    body {
+      background-attachment: fixed;
+    }
   }
 
   ::selection {

@@ -30,6 +30,9 @@ export default function ProductGallery({
   const { t } = useSiteLang();
   const prefersReduced = useReducedMotion();
   const [active, setActive] = useState(0);
+  // Per-image error tracking so a broken URL shows the placeholder, not a
+  // torn-image icon on top of the frame.
+  const [failed, setFailed] = useState<Record<number, boolean>>({});
 
   const { scrollYProgress } = useScroll({
     target: ref,
@@ -87,7 +90,7 @@ export default function ProductGallery({
           transition={{ duration: 1.1, ease: EASE }}
           className="relative aspect-[4/3] overflow-hidden rounded-4xl border border-cream-300/70 bg-cream-200 shadow-lift"
         >
-          {current ? (
+          {current && !failed[active] ? (
             <AnimatePresence mode="wait">
               <motion.div
                 key={current}
@@ -106,6 +109,7 @@ export default function ProductGallery({
                     alt={name}
                     fill
                     sizes="(max-width: 1024px) 100vw, 600px"
+                    onError={() => setFailed((f) => ({ ...f, [active]: true }))}
                     className="object-cover"
                     priority
                   />

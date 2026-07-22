@@ -34,6 +34,10 @@ export default function ProductCard({ product }: { product: Product }) {
   const ref = useRef<HTMLDivElement>(null);
   const prefersReduced = useReducedMotion();
   const [hovered, setHovered] = useState(false);
+  // Track load/error so the image fades in over a skeleton instead of popping,
+  // and a broken URL falls back to the placeholder instead of a torn icon.
+  const [loaded, setLoaded] = useState(false);
+  const [failed, setFailed] = useState(false);
 
   const springs = { stiffness: 180, damping: 18, mass: 0.5 };
   const rotateX = useSpring(useMotionValue(0), springs);
@@ -88,17 +92,26 @@ export default function ProductCard({ product }: { product: Product }) {
         <Link href={`/torte/${product.id}`} className="block focus:outline-none">
           <div className="relative aspect-[4/3] overflow-hidden bg-cream-200">
             {/* Oversized so the parallax drift never exposes an edge. */}
+            {/* Skeleton sits behind the image until it decodes. */}
+            {cover && !failed && !loaded && (
+              <div className="absolute inset-0 animate-pulse bg-cream-200" />
+            )}
+
             <motion.div
               style={{ x: imageX, y: imageY }}
               className="absolute -inset-[6%]"
             >
-              {cover ? (
+              {cover && !failed ? (
                 <Image
                   src={cover}
                   alt={product.name}
                   fill
                   sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  className="object-cover transition-transform duration-[900ms] ease-out group-hover:scale-[1.1]"
+                  onLoad={() => setLoaded(true)}
+                  onError={() => setFailed(true)}
+                  className={`object-cover transition-transform duration-[900ms] ease-out group-hover:scale-[1.1] ${
+                    loaded ? 'opacity-100' : 'opacity-0'
+                  } transition-opacity`}
                 />
               ) : (
                 <div className="grid h-full place-items-center text-5xl opacity-60">

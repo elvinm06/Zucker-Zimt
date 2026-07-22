@@ -43,6 +43,12 @@ async function bootstrap() {
 
   app.setGlobalPrefix('api');
 
+  // Behind a hosting proxy (Vercel/Render/Railway) the app receives requests
+  // over http on an internal port; the public protocol/host arrive in the
+  // X-Forwarded-* headers. Trusting the proxy makes req.protocol reflect the
+  // real https origin, so uploaded-image URLs are built correctly.
+  app.set('trust proxy', 1);
+
   // Uploaded images are served straight from disk at /uploads/<file>,
   // outside the "api" prefix.
   ensureUploadsDir();

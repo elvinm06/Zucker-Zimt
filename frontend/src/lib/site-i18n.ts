@@ -18,6 +18,8 @@ const de = {
   navHow: 'So geht’s',
   navContact: 'Kontakt',
   orderNow: 'Jetzt bestellen',
+  menuOpen: 'Menü öffnen',
+  menuClose: 'Menü schließen',
 
   // --- Hero ---
   heroEyebrow: 'Handgemacht · Natürliche Zutaten',
@@ -130,6 +132,8 @@ const en: Dictionary = {
   navHow: 'How it works',
   navContact: 'Contact',
   orderNow: 'Order now',
+  menuOpen: 'Open menu',
+  menuClose: 'Close menu',
 
   heroEyebrow: 'Handmade · Natural ingredients',
   heroSubline: 'fine cakes from our bakery',
