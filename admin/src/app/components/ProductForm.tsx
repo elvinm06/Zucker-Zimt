@@ -30,6 +30,10 @@ export default function ProductForm({
   const { lang, t } = useAdminLang();
   const [form, setForm] = useState<ProductPayload>(EMPTY);
   const [customIngredient, setCustomIngredient] = useState('');
+  // Price is kept as raw text so the field can be empty and accept a comma or
+  // dot; it is parsed to a number only on submit. Binding a number directly
+  // forces a "0" that can't be cleared and rejects the comma separator.
+  const [priceInput, setPriceInput] = useState('');
 
   // Fill the form when switching into edit mode, reset when leaving it.
   useEffect(() => {
@@ -46,7 +50,11 @@ export default function ProductForm({
           }
         : EMPTY,
     );
-  }, [editing]);
+    // Show the existing price with the locale's decimal separator.
+    setPriceInput(
+      editing ? String(editing.price).replace('.', lang === 'de' ? ',' : '.') : '',
+    );
+  }, [editing, lang]);
 
   const toggle = (field: 'ingredients' | 'allergens', value: string) =>
     setForm((prev) => ({
@@ -63,9 +71,14 @@ export default function ProductForm({
     setCustomIngredient('');
   }
 
+  // Accept both "48,5" and "48.5"; empty or a lone separator is not a price.
+  const parsedPrice = Number(priceInput.replace(',', '.'));
+  const priceValid = priceInput.trim() !== '' && Number.isFinite(parsedPrice);
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    await onSubmit({ ...form, price: Number(form.price) });
+    if (!priceValid) return;
+    await onSubmit({ ...form, price: parsedPrice });
   }
 
   const customIngredients = form.ingredients.filter(
@@ -98,11 +111,15 @@ export default function ProductForm({
           <span className="text-sm text-muted">{t.fieldPrice}</span>
           <input
             className="input-field"
-            type="number"
-            step="0.01"
-            min="0"
-            value={form.price}
-            onChange={(e) => setForm({ ...form, price: Number(e.target.value) })}
+            type="text"
+            inputMode="decimal"
+            value={priceInput}
+            onChange={(e) => {
+              const v = e.target.value;
+              // Allow only digits and a single comma/dot separator.
+              if (/^[0-9]*[.,]?[0-9]*$/.test(v)) setPriceInput(v);
+            }}
+            placeholder={lang === 'de' ? '0,00' : '0.00'}
             required
           />
         </label>
@@ -228,7 +245,11 @@ export default function ProductForm({
       </label>
 
       <div className="flex gap-3">
-        <button type="submit" className="btn-primary" disabled={submitting}>
+        <button
+          type="submit"
+          className="btn-primary"
+          disabled={submitting || !priceValid}
+        >
           {submitting ? t.saving : editing ? t.update : t.create}
         </button>
         {editing && (

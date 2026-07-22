@@ -20,6 +20,9 @@ export default function AdminDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Bumping this key remounts the form to clear all fields after a successful
+  // save, so the next new product starts from a blank form.
+  const [formKey, setFormKey] = useState(0);
   const [tab, setTab] = useState<'products' | 'settings'>('products');
   const [brandName, setBrandName] = useState('Bakery');
 
@@ -62,6 +65,7 @@ export default function AdminDashboardPage() {
         await adminApi.createProduct(payload);
       }
       setEditing(null);
+      setFormKey((k) => k + 1); // clear the form for the next entry
       await load();
     } catch (err) {
       setError(err instanceof Error ? err.message : t.saveFailed);
@@ -238,6 +242,7 @@ export default function AdminDashboardPage() {
 
         <aside className="lg:sticky lg:top-24 lg:self-start">
           <ProductForm
+            key={formKey}
             editing={editing}
             onSubmit={handleSubmit}
             onCancel={() => setEditing(null)}
