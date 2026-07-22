@@ -56,17 +56,23 @@ export default async function ProductPage({
 }: {
   params: { id: string };
 }) {
-  const product = await loadProduct(params.id);
+  // Fire all three backend calls at once instead of awaiting them in series —
+  // on a slow/cold backend this cuts the page's wait from 3 round-trips to 1.
+  const [product, settingsRaw, allProducts] = await Promise.all([
+    loadProduct(params.id),
+    getSettings(),
+    getProducts().catch(() => [] as Product[]),
+  ]);
   if (!product) notFound();
 
-  const settings = (await getSettings()) ?? FALLBACK_SETTINGS;
+  const settings = settingsRaw ?? FALLBACK_SETTINGS;
   const t = getDictionary();
   const lang = getLocale();
 
   // Suggestions at the bottom; failure here must not break the page.
-  const related = await getProducts()
-    .then((all) => all.filter((item) => item.id !== product.id).slice(0, 3))
-    .catch(() => [] as Product[]);
+  const related = allProducts
+    .filter((item) => item.id !== product.id)
+    .slice(0, 3);
 
   return (
     <main className="min-h-screen">
