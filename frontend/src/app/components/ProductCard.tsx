@@ -157,9 +157,22 @@ export default function ProductCard({ product }: { product: Product }) {
               }
               transition={{ duration: 0.45, ease: EASE }}
               style={{ z: 40 }}
-              className="absolute bottom-4 left-4 rounded-full bg-cream-50/95 px-4 py-1.5 text-xs font-medium text-primary shadow-soft"
+              className="absolute bottom-4 left-4 inline-flex items-center gap-1.5 rounded-full bg-cream-50/95 px-4 py-1.5 text-xs font-medium text-primary shadow-soft"
             >
               {t.cardCta}
+              <svg
+                aria-hidden
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-3.5 w-3.5"
+              >
+                <path d="M5 12h14" />
+                <path d="m12 5 7 7-7 7" />
+              </svg>
             </motion.span>
           </div>
 

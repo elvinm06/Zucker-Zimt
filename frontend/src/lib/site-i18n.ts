@@ -63,7 +63,7 @@ const de = {
   catalogDownTitle: 'Der Katalog ist gerade nicht erreichbar',
   catalogDownText:
     'Bitte versuchen Sie es in Kürze noch einmal oder schreiben Sie uns direkt per WhatsApp.',
-  cardCta: 'Zur Torte →',
+  cardCta: 'Zur Torte',
   moreAllergens: (n: number) => `+${n} weitere`,
 
   // --- How it works ---
@@ -177,7 +177,7 @@ const en: Dictionary = {
   catalogDownTitle: 'The catalogue is currently unavailable',
   catalogDownText:
     'Please try again shortly, or message us directly on WhatsApp.',
-  cardCta: 'View cake →',
+  cardCta: 'View cake',
   moreAllergens: (n: number) => `+${n} more`,
 
   howEyebrow: 'In three steps',
