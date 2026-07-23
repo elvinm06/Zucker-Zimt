@@ -30,6 +30,7 @@ export default function ProductForm({
   const { lang, t } = useAdminLang();
   const [form, setForm] = useState<ProductPayload>(EMPTY);
   const [customIngredient, setCustomIngredient] = useState('');
+  const [customAllergen, setCustomAllergen] = useState('');
   // Price is kept as raw text so the field can be empty and accept a comma or
   // dot; it is parsed to a number only on submit. Binding a number directly
   // forces a "0" that can't be cleared and rejects the comma separator.
@@ -64,11 +65,32 @@ export default function ProductForm({
         : [...prev[field], value],
     }));
 
+  const rename = (
+    field: 'ingredients' | 'allergens',
+    item: string,
+    next: string,
+  ) =>
+    setForm((prev) => ({
+      ...prev,
+      // Renaming onto an existing entry would create a duplicate, so the old
+      // one is dropped instead.
+      [field]: prev[field].includes(next)
+        ? prev[field].filter((v) => v !== item)
+        : prev[field].map((v) => (v === item ? next : v)),
+    }));
+
   function addCustomIngredient() {
     const value = customIngredient.trim();
     if (!value || form.ingredients.includes(value)) return;
     setForm((prev) => ({ ...prev, ingredients: [...prev.ingredients, value] }));
     setCustomIngredient('');
+  }
+
+  function addCustomAllergen() {
+    const value = customAllergen.trim();
+    if (!value || form.allergens.includes(value)) return;
+    setForm((prev) => ({ ...prev, allergens: [...prev.allergens, value] }));
+    setCustomAllergen('');
   }
 
   // Accept both "48,5" and "48.5"; empty or a lone separator is not a price.
@@ -83,6 +105,12 @@ export default function ProductForm({
 
   const customIngredients = form.ingredients.filter(
     (item) => !COMMON_INGREDIENTS.includes(item),
+  );
+
+  // Free-text entries live in the same array as the predefined keys; anything
+  // that is not a known key is a custom allergen.
+  const customAllergens = form.allergens.filter(
+    (item) => !ALLERGENS.some(({ key }) => key === item),
   );
 
   return (
@@ -190,21 +218,11 @@ export default function ProductForm({
           </button>
         </div>
 
-        {customIngredients.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {customIngredients.map((item) => (
-              <button
-                key={item}
-                type="button"
-                onClick={() => toggle('ingredients', item)}
-                title={t.removeChip}
-                className="rounded-full bg-caramel-gradient px-3.5 py-1.5 text-sm text-cream-50 shadow-soft"
-              >
-                {item} ✕
-              </button>
-            ))}
-          </div>
-        )}
+        <EditableChips
+          items={customIngredients}
+          onRename={(item, next) => rename('ingredients', item, next)}
+          onRemove={(item) => toggle('ingredients', item)}
+        />
       </fieldset>
 
       {/* --- Allergens --- */}
@@ -232,6 +250,34 @@ export default function ProductForm({
             );
           })}
         </div>
+
+        <div className="flex gap-2">
+          <input
+            className="input-field"
+            placeholder={t.ownAllergen}
+            value={customAllergen}
+            onChange={(e) => setCustomAllergen(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                addCustomAllergen();
+              }
+            }}
+          />
+          <button
+            type="button"
+            className="btn-ghost shrink-0 px-5 py-3"
+            onClick={addCustomAllergen}
+          >
+            {t.add}
+          </button>
+        </div>
+
+        <EditableChips
+          items={customAllergens}
+          onRename={(item, next) => rename('allergens', item, next)}
+          onRemove={(item) => toggle('allergens', item)}
+        />
       </fieldset>
 
       <label className="flex items-center gap-3 rounded-2xl bg-cream-200/50 px-4 py-3">
@@ -259,5 +305,84 @@ export default function ProductForm({
         )}
       </div>
     </form>
+  );
+}
+
+/**
+ * Custom (free-text) entries as chips: the text opens an inline input to
+ * rename the entry, the ✕ removes it.
+ */
+function EditableChips({
+  items,
+  onRename,
+  onRemove,
+}: {
+  items: string[];
+  onRename: (item: string, next: string) => void;
+  onRemove: (item: string) => void;
+}) {
+  const { t } = useAdminLang();
+  const [editing, setEditing] = useState<string | null>(null);
+  const [draft, setDraft] = useState('');
+
+  function commit() {
+    if (editing === null) return;
+    const value = draft.trim();
+    // An emptied chip is treated as a cancel, not a delete — the ✕ deletes.
+    if (value && value !== editing) onRename(editing, value);
+    setEditing(null);
+  }
+
+  if (items.length === 0) return null;
+
+  return (
+    <div className="flex flex-wrap gap-2">
+      {items.map((item) =>
+        editing === item ? (
+          <input
+            key={item}
+            autoFocus
+            onFocus={(e) => e.target.select()}
+            className="w-40 rounded-full border border-accent bg-cream-50 px-3.5 py-1.5 text-sm text-chocolate-600 outline-none ring-4 ring-accent/15"
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onBlur={commit}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                commit();
+              }
+              if (e.key === 'Escape') setEditing(null);
+            }}
+          />
+        ) : (
+          <span
+            key={item}
+            className="inline-flex items-stretch overflow-hidden rounded-full bg-caramel-gradient text-sm text-cream-50 shadow-soft"
+          >
+            <button
+              type="button"
+              title={t.edit}
+              onClick={() => {
+                setEditing(item);
+                setDraft(item);
+              }}
+              className="py-1.5 pl-3.5 pr-1.5 transition hover:bg-white/15"
+            >
+              {item}
+            </button>
+            <button
+              type="button"
+              title={t.removeChip}
+              onClick={() => onRemove(item)}
+              className="py-1.5 pl-1.5 pr-3 transition hover:bg-white/15"
+              aria-label={`${t.removeChip}: ${item}`}
+            >
+              ✕
+            </button>
+          </span>
+        ),
+      )}
+    </div>
   );
 }
