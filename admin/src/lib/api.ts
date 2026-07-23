@@ -68,6 +68,9 @@ export const adminApi = {
 
   listProducts: () => request<Product[]>('/products/admin/all'),
 
+  // Public endpoint, but it also returns hidden products — enough for editing.
+  getProduct: (id: string) => request<Product>(`/products/${id}`),
+
   /**
    * Content-Type is deliberately not set — the browser must add its own
    * multipart boundary, and overriding it breaks the upload.
