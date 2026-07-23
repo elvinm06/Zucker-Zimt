@@ -19,17 +19,23 @@ function wrap(min: number, max: number, v: number) {
   return ((((v - min) % range) + range) % range) + min;
 }
 
-function MarqueeRow({ words }: { words: string[] }) {
+function MarqueeRow({
+  words,
+  offset = 0,
+}: {
+  words: string[];
+  offset?: number;
+}) {
   return (
     <span className="flex shrink-0 items-center">
       {words.map((word, i) => (
         <span key={word} className="flex items-center">
           <span
             className={`px-5 font-display text-5xl font-semibold italic leading-tight sm:px-7 sm:text-7xl ${
-              i % 2 ? 'text-transparent' : 'text-chocolate-300/70'
+              (i + offset) % 2 ? 'text-transparent' : 'text-chocolate-300/70'
             }`}
             style={
-              i % 2
+              (i + offset) % 2
                 ? { WebkitTextStroke: '1.5px rgba(155,111,67,0.45)' }
                 : undefined
             }
@@ -50,7 +56,9 @@ function MarqueeRow({ words }: { words: string[] }) {
  * connected to the pointer.
  */
 export default function VelocityMarquee({
-  baseVelocity = -2.2,
+  // Percent of the full four-copy track per second. The track is several
+  // thousand pixels wide, so small values already read as a steady drift.
+  baseVelocity = -0.5,
 }: {
   baseVelocity?: number;
 }) {
@@ -72,8 +80,14 @@ export default function VelocityMarquee({
     damping: 32,
   });
 
-  // Four identical copies → one copy is exactly 25% of the track.
-  const x = useTransform(baseX, (v) => `${wrap(-25, 0, v)}%`);
+  const words = t.marqueeWords;
+
+  // The track holds four copies of the row. With an odd word count the
+  // filled/outline alternation only repeats every second copy, so the loop
+  // must jump two copies (-50%) to land on an identical frame; with an even
+  // count one copy (-25%) suffices.
+  const loop = words.length % 2 ? 50 : 25;
+  const x = useTransform(baseX, (v) => `${wrap(-loop, 0, v)}%`);
 
   const directionRef = useRef(1);
   useAnimationFrame((_, delta) => {
@@ -87,8 +101,6 @@ export default function VelocityMarquee({
     moveBy += directionRef.current * moveBy * Math.abs(vf);
     baseX.set(baseX.get() + moveBy);
   });
-
-  const words = t.marqueeWords;
 
   // Static, centered band — no drift, no skew.
   if (prefersReduced) {
@@ -106,14 +118,20 @@ export default function VelocityMarquee({
       {/* Slight tilt sells the "sticker across the page" look. */}
       <div className="-mx-[3%] -rotate-[1.2deg]">
         <div className="border-y border-chocolate-200/40 bg-gradient-to-r from-transparent via-cream-200/70 to-transparent py-5 sm:py-7">
+          {/* w-max makes the track as wide as its four copies, so the
+              percentage `x` moves in track units — without it the flex div
+              is only as wide as its parent and the wrap visibly snaps. */}
           <motion.div
             style={{ x, skewX }}
-            className="flex whitespace-nowrap will-change-transform"
+            className="flex w-max whitespace-nowrap will-change-transform"
           >
-            <MarqueeRow words={words} />
-            <MarqueeRow words={words} />
-            <MarqueeRow words={words} />
-            <MarqueeRow words={words} />
+            {[0, 1, 2, 3].map((copy) => (
+              <MarqueeRow
+                key={copy}
+                words={words}
+                offset={(copy * words.length) % 2}
+              />
+            ))}
           </motion.div>
         </div>
       </div>
