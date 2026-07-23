@@ -5,7 +5,9 @@ name: Keep backend awake
 # health endpoint every 10 minutes keeps the instance warm around the clock.
 on:
   schedule:
-    - cron: '*/10 * * * *'
+    # Offset minutes instead of */10 — runs scheduled exactly on :00/:10/:20
+    # hit GitHub's busiest slots and get delayed or dropped.
+    - cron: '4,14,24,34,44,54 * * * *'
   workflow_dispatch:
 
 jobs:
