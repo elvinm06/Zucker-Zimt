@@ -36,6 +36,17 @@ const de = {
   heroBadgeText: 'Ohne Konservierungsstoffe, nach Familienrezept.',
   scrollHint: '↓ scrollen',
 
+  // --- Marquee band between the sections ---
+  marqueeWords: [
+    'Handgemacht',
+    'Frisch gebacken',
+    'Natürliche Zutaten',
+    'Mit Liebe verziert',
+  ],
+
+  // --- Rotating sticker on the product gallery ---
+  badgeRing: 'Täglich frisch · Hausgemacht · ',
+
   // --- Features ---
   featureCraftTitle: 'Handarbeit',
   featureCraftText:
@@ -151,6 +162,15 @@ const en: Dictionary = {
   heroBadgeTitle: 'Baked fresh every day',
   heroBadgeText: 'No preservatives, made to a family recipe.',
   scrollHint: '↓ scroll',
+
+  marqueeWords: [
+    'Handmade',
+    'Freshly baked',
+    'Natural ingredients',
+    'Decorated with love',
+  ],
+
+  badgeRing: 'Fresh daily · Homemade · ',
 
   featureCraftTitle: 'Handmade',
   featureCraftText:

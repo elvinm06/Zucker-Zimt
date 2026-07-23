@@ -14,17 +14,23 @@ import {
 } from 'framer-motion';
 import { useSiteLang } from './LocaleProvider';
 import { EASE } from './motion/Reveal';
+import RotatingBadge from './motion/RotatingBadge';
 
 /**
  * Product images: reveals with a clip-path wipe, tilts toward the pointer,
- * drifts against the scroll and cross-fades between thumbnails.
+ * drifts against the scroll and cross-fades between thumbnails. The
+ * optional rotating sticker sits on the image corner, outside the tilt.
  */
 export default function ProductGallery({
   images,
   name,
+  badgeRing,
+  badgeCenter,
 }: {
   images: string[];
   name: string;
+  badgeRing?: string;
+  badgeCenter?: React.ReactNode;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const { t } = useSiteLang();
@@ -74,7 +80,18 @@ export default function ProductGallery({
         onPointerMove={handlePointerMove}
         onPointerLeave={reset}
         style={{ perspective: 1200 }}
+        className="relative"
       >
+        {/* Slowly orbiting sticker — anchored here, not on the tilting
+            card, so it stays put while the image leans. */}
+        {badgeRing && (
+          <RotatingBadge
+            ring={badgeRing}
+            className="absolute -bottom-5 -right-3 z-10 w-24 sm:-right-5 sm:w-28"
+          >
+            {badgeCenter}
+          </RotatingBadge>
+        )}
         <motion.div
           style={{ rotateX, rotateY, transformStyle: 'preserve-3d' }}
           initial={
@@ -133,6 +150,18 @@ export default function ProductGallery({
               aria-hidden
               className="pointer-events-none absolute inset-0 mix-blend-soft-light"
               style={{ background: glare }}
+            />
+          )}
+
+          {/* One shine sweep after the reveal — not looped, the photo
+              should stay calm afterwards. */}
+          {!prefersReduced && (
+            <motion.div
+              aria-hidden
+              initial={{ x: '-160%' }}
+              animate={{ x: '420%' }}
+              transition={{ duration: 1.3, ease: 'easeInOut', delay: 1.15 }}
+              className="pointer-events-none absolute inset-y-0 w-1/3 skew-x-12 bg-gradient-to-r from-transparent via-cream-50/40 to-transparent"
             />
           )}
         </motion.div>

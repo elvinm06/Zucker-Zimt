@@ -9,8 +9,11 @@ import Footer from './components/Footer';
 import Header from './components/Header';
 import Hero from './components/Hero';
 import HowItWorks from './components/HowItWorks';
+import CakeCutScene from './components/motion/CakeCutScene';
+import IntroLoader from './components/motion/IntroLoader';
 import Reveal from './components/motion/Reveal';
 import SplitText from './components/motion/SplitText';
+import VelocityMarquee from './components/motion/VelocityMarquee';
 
 /**
  * Server Component — products are fetched on the server (better SEO and a
@@ -31,9 +34,11 @@ export default async function HomePage() {
   return (
     <SearchProvider>
     <main className="min-h-screen">
+      <IntroLoader />
       <Header />
       <Hero />
       <FeatureStrip />
+      <VelocityMarquee />
 
       <section id="katalog" className="mx-auto max-w-6xl px-5 py-20 sm:py-24">
         <div className="mb-14 text-center">
@@ -64,6 +69,11 @@ export default async function HomePage() {
           <CatalogGrid products={products} />
         )}
       </section>
+
+      {/* Signature moment: the cake gets cut on scroll. */}
+      <div className="mx-auto flex max-w-6xl justify-center px-5">
+        <CakeCutScene className="w-64 sm:w-80" />
+      </div>
 
       <HowItWorks />
       <ContactCTA />

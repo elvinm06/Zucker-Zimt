@@ -15,6 +15,7 @@ import { useSiteLang } from './LocaleProvider';
 import { useSettings } from './SettingsProvider';
 import AnimatedNumber from './AnimatedNumber';
 import CakeSearch from './CakeSearch';
+import FloatingDecor from './motion/FloatingDecor';
 import Magnetic from './motion/Magnetic';
 import { EASE } from './motion/Reveal';
 import SplitText from './motion/SplitText';
@@ -120,6 +121,9 @@ export default function Hero() {
         animate={prefersReduced ? {} : { scale: [1, 1.18, 0.95, 1] }}
         transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut' }}
       />
+
+      {/* Bakery bits at different depths, following the pointer. */}
+      <FloatingDecor />
 
       <motion.div
         style={prefersReduced ? undefined : { opacity: heroFade }}
@@ -314,6 +318,37 @@ export default function Hero() {
             </motion.div>
           </div>
         </motion.div>
+      </motion.div>
+
+      {/* Scroll cue — a dot runs down the track; fades once scrolling starts. */}
+      <motion.div
+        aria-hidden
+        style={prefersReduced ? { x: '-50%' } : { opacity: heroFade, x: '-50%' }}
+        className="absolute bottom-10 left-1/2 hidden lg:block"
+      >
+        <motion.a
+          href="#katalog"
+          initial={{ opacity: 0, y: -12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: EASE, delay: 1.7 }}
+          className="pointer-events-auto flex flex-col items-center gap-2 text-muted transition-colors hover:text-primary"
+        >
+          <span className="text-[10px] uppercase tracking-[0.3em]">
+            {t.scrollHint.replace('↓', '').trim()}
+          </span>
+          <span className="relative block h-8 w-px overflow-hidden rounded-full bg-chocolate-200/70">
+            <motion.span
+              className="absolute left-0 top-0 h-3 w-px bg-caramel-500"
+              animate={prefersReduced ? undefined : { y: [-12, 36] }}
+              transition={{
+                duration: 1.6,
+                repeat: Infinity,
+                repeatDelay: 0.4,
+                ease: 'easeInOut',
+              }}
+            />
+          </span>
+        </motion.a>
       </motion.div>
     </section>
   );
