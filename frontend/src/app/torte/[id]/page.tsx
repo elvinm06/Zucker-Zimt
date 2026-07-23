@@ -12,6 +12,7 @@ import { getProduct, getProducts, getSettings } from '@/lib/api';
 import { getDictionary, getLocale } from '@/lib/locale';
 import type { Product } from '@/types/product';
 import AllergenBadge from '@/app/components/AllergenBadge';
+import { TelegramIcon, WhatsAppIcon } from '@/app/components/BrandIcons';
 import { FALLBACK_SETTINGS } from '@/config/fallback-settings';
 import CatalogGrid from '@/app/components/CatalogGrid';
 import ProductGallery from '@/app/components/ProductGallery';
@@ -210,8 +211,9 @@ export default async function ProductPage({
                     href={buildWhatsAppLink(settings, product.name, lang)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#25D366] px-7 py-3.5 font-medium text-[#0B3B22] shadow-soft transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lift"
+                    className="inline-flex h-full min-h-[3.25rem] w-full items-center justify-center gap-2 rounded-full bg-[#25D366] px-5 py-3 text-center leading-snug font-medium text-[#0B3B22] shadow-soft transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lift"
                   >
+                    <WhatsAppIcon className="h-5 w-5 shrink-0" />
                     {t.orderWhatsapp}
                   </a>
                 </Magnetic>
@@ -220,8 +222,9 @@ export default async function ProductPage({
                     href={buildTelegramLink(settings, product.name, lang)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#229ED9] px-7 py-3.5 font-medium text-cream-50 shadow-soft transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lift"
+                    className="inline-flex h-full min-h-[3.25rem] w-full items-center justify-center gap-2 rounded-full bg-[#229ED9] px-5 py-3 text-center leading-snug font-medium text-cream-50 shadow-soft transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lift"
                   >
+                    <TelegramIcon className="h-5 w-5 shrink-0" />
                     {t.orderTelegram}
                   </a>
                 </Magnetic>

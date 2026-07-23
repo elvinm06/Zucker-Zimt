@@ -35,6 +35,14 @@
     @apply bg-accent/25 text-primary;
   }
 
+  /* The search box renders its own clear button; hide the browser's native
+     one so there is only a single ✕. */
+  input[type='search']::-webkit-search-cancel-button,
+  input[type='search']::-webkit-search-decoration {
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
   h1,
   h2,
   h3 {
