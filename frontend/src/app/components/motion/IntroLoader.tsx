@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useLayoutEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import {
   AnimatePresence,
   motion,
@@ -23,6 +23,19 @@ const SEEN_KEY = 'bakery_intro_seen';
 
 /** How long the brand frame holds before the curtain lifts. */
 const HOLD_MS = 2100;
+
+/**
+ * Jumps to the very top, ignoring the smooth easing declared for <html> —
+ * the page has to be at the top the instant the curtain lifts, not gliding
+ * there afterwards.
+ */
+function jumpToTop() {
+  const root = document.documentElement;
+  const previous = root.style.scrollBehavior;
+  root.style.scrollBehavior = 'auto';
+  window.scrollTo(0, 0);
+  root.style.scrollBehavior = previous;
+}
 
 const letter: Variants = {
   hidden: { y: '115%', rotateZ: 5 },
@@ -49,6 +62,9 @@ export default function IntroLoader() {
   // Skipping must bypass AnimatePresence — otherwise the curtain would
   // replay its exit animation on every in-session reload.
   const [skipped, setSkipped] = useState(false);
+  // Only a played intro forces the top; a skipped one leaves the browser's
+  // own scroll handling (restore on reload, jump to #hash) alone.
+  const played = useRef(false);
 
   useIsomorphicLayoutEffect(() => {
     // Repeat visit in this session, or reduced motion: remove before paint.
@@ -58,7 +74,14 @@ export default function IntroLoader() {
       return;
     }
 
+    played.current = true;
+    // The browser would otherwise restore the offset from the previous visit
+    // once the page is scrollable again, dropping the visitor into the middle
+    // of the catalogue the moment the curtain lifts.
+    if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+    jumpToTop();
     document.documentElement.style.overflow = 'hidden';
+
     const timer = setTimeout(() => {
       sessionStorage.setItem(SEEN_KEY, '1');
       setShow(false);
@@ -67,6 +90,7 @@ export default function IntroLoader() {
     return () => {
       clearTimeout(timer);
       document.documentElement.style.overflow = '';
+      if ('scrollRestoration' in history) history.scrollRestoration = 'auto';
     };
     // Mount-only: re-running on a media-query flip would re-lock the page.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -74,7 +98,15 @@ export default function IntroLoader() {
 
   // Release the scroll lock the moment the curtain starts to leave.
   useEffect(() => {
-    if (!show) document.documentElement.style.overflow = '';
+    if (show) return;
+    document.documentElement.style.overflow = '';
+    if (!played.current) return;
+
+    // Behind the still-closed curtain: undo anything that moved the page
+    // while the intro ran — a restored offset, a #hash target — so the
+    // reveal always lands on the top of the page.
+    jumpToTop();
+    if ('scrollRestoration' in history) history.scrollRestoration = 'auto';
   }, [show]);
 
   const words = name.split(' ');
@@ -96,7 +128,7 @@ export default function IntroLoader() {
               touching this element's style (that would warn on hydration). */}
           <script
             dangerouslySetInnerHTML={{
-              __html: `try{if(sessionStorage.getItem('${SEEN_KEY}')||matchMedia('(prefers-reduced-motion: reduce)').matches){var s=document.createElement('style');s.textContent='[data-intro-overlay]{display:none!important}';document.head.appendChild(s);}}catch(e){}`,
+              __html: `try{if(sessionStorage.getItem('${SEEN_KEY}')||matchMedia('(prefers-reduced-motion: reduce)').matches){var s=document.createElement('style');s.textContent='[data-intro-overlay]{display:none!important}';document.head.appendChild(s);}else if('scrollRestoration' in history){history.scrollRestoration='manual';}}catch(e){}`,
             }}
           />
           {/* Back curtain — leaves last, so the wipe reads as two layers. */}
