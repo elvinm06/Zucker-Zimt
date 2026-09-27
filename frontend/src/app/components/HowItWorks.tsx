@@ -3,99 +3,122 @@
 import { useRef } from 'react';
 import {
   motion,
-  useReducedMotion,
+  useInView,
   useScroll,
   useTransform,
-  type Variants,
 } from 'framer-motion';
+import { useReducedMotion } from '@/lib/motion';
+import type { IconProps } from './icons';
+import { Check, MessageCircle, Search } from './icons';
 import { useSiteLang } from './LocaleProvider';
+import CakeCutScene from './motion/CakeCutScene';
 import Reveal, { EASE } from './motion/Reveal';
 import SplitText from './motion/SplitText';
 
+function Step({
+  index,
+  title,
+  text,
+  Icon,
+}: {
+  index: number;
+  title: string;
+  text: string;
+  Icon: (props: IconProps) => JSX.Element;
+}) {
+  const ref = useRef<HTMLLIElement>(null);
+  // The step in the middle band of the viewport is the "current" one.
+  const active = useInView(ref, { margin: '-45% 0px -45% 0px' });
 
+  return (
+    <li
+      ref={ref}
+      className="grid grid-cols-[3rem_1fr] gap-5 border-b border-line py-9 last:border-b-0 sm:gap-8 sm:py-12"
+    >
+      <motion.span
+        animate={{
+          backgroundColor: active ? '#452D19' : 'rgba(251,246,239,1)',
+          color: active ? '#FBF6EF' : '#452D19',
+          borderColor: active ? '#452D19' : 'rgba(69,45,25,0.2)',
+          scale: active ? 1.06 : 1,
+        }}
+        transition={{ duration: 0.5, ease: EASE }}
+        className="relative z-10 grid h-12 w-12 place-items-center rounded-full border font-display text-lg"
+      >
+        0{index}
+      </motion.span>
 
-const container: Variants = {
-  hidden: {},
-  visible: { transition: { staggerChildren: 0.16 } },
-};
-
-const stepCard: Variants = {
-  hidden: { opacity: 0, y: 60, scale: 0.94, filter: 'blur(10px)' },
-  visible: {
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    filter: 'blur(0px)',
-    transition: { duration: 0.8, ease: EASE },
-  },
-};
+      <Reveal className="min-w-0">
+        <span className="grid h-9 w-9 place-items-center rounded-full bg-caramel-300/20 text-accent">
+          <Icon className="h-4 w-4" />
+        </span>
+        <h3 className="mt-4 font-display text-2xl text-primary sm:text-3xl">
+          {title}
+        </h3>
+        <p className="mt-3 max-w-md text-pretty leading-relaxed text-muted">
+          {text}
+        </p>
+      </Reveal>
+    </li>
+  );
+}
 
 export default function HowItWorks() {
-  const ref = useRef<HTMLElement>(null);
+  const listRef = useRef<HTMLOListElement>(null);
   const { t } = useSiteLang();
   const prefersReduced = useReducedMotion();
 
   const steps = [
-    { step: '01', title: t.step1Title, text: t.step1Text },
-    { step: '02', title: t.step2Title, text: t.step2Text },
-    { step: '03', title: t.step3Title, text: t.step3Text },
+    { Icon: Search, title: t.step1Title, text: t.step1Text },
+    { Icon: Check, title: t.step2Title, text: t.step2Text },
+    { Icon: MessageCircle, title: t.step3Title, text: t.step3Text },
   ];
 
-  // The connecting line draws itself as the section scrolls through.
+  // The connecting line draws itself as the list scrolls through.
   const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ['start 0.85', 'center 0.5'],
+    target: listRef,
+    offset: ['start 0.8', 'end 0.55'],
   });
   const lineScale = useTransform(scrollYProgress, [0, 1], [0, 1]);
 
   return (
-    <section ref={ref} id="ablauf" className="mx-auto max-w-6xl px-5 py-20">
-      <div className="mb-12 text-center">
-        <Reveal direction="none">
-          <span className="eyebrow">{t.howEyebrow}</span>
-        </Reveal>
-        <h2 className="mt-5 text-3xl font-semibold text-primary sm:text-4xl">
-          <SplitText text={t.howTitle} />
-        </h2>
+    <section id="ablauf" className="wrap py-20 sm:py-28">
+      <div className="grid gap-12 lg:grid-cols-12 lg:gap-16">
+        <div className="lg:col-span-5">
+          <div className="lg:sticky lg:top-32">
+            <Reveal direction="none">
+              <span className="eyebrow">{t.howEyebrow}</span>
+            </Reveal>
+            <h2 className="mt-6 text-display-md font-medium text-primary">
+              <SplitText text={t.howTitle} />
+            </h2>
+            <Reveal delay={0.2}>
+              <p className="mt-5 max-w-sm text-pretty leading-relaxed text-muted">
+                {t.howLead}
+              </p>
+            </Reveal>
+            {/* Signature moment: the cake gets cut when it scrolls in. */}
+            <CakeCutScene className="mt-10 w-60 sm:w-72" />
+          </div>
+        </div>
+
+        <ol ref={listRef} className="relative lg:col-span-7">
+          {/* Track + the progress line running through the numerals. */}
+          <span
+            aria-hidden
+            className="absolute bottom-12 left-6 top-12 w-px bg-line"
+          />
+          <motion.span
+            aria-hidden
+            style={prefersReduced ? undefined : { scaleY: lineScale }}
+            className="absolute bottom-12 left-6 top-12 w-px origin-top bg-accent"
+          />
+
+          {steps.map((step, i) => (
+            <Step key={step.title} index={i + 1} {...step} />
+          ))}
+        </ol>
       </div>
-
-      <motion.div
-        variants={container}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, amount: 0.3 }}
-        className="relative grid gap-6 md:grid-cols-3"
-      >
-        <motion.div
-          aria-hidden
-          style={prefersReduced ? undefined : { scaleX: lineScale }}
-          className="absolute left-0 right-0 top-16 hidden h-px origin-left bg-gradient-to-r from-transparent via-caramel-400 to-transparent md:block"
-        />
-
-        {steps.map((item) => (
-          <motion.div
-            key={item.step}
-            variants={stepCard}
-            whileHover={prefersReduced ? undefined : { y: -8 }}
-            transition={{ type: 'spring', stiffness: 300, damping: 22 }}
-            className="card group relative p-7 text-center"
-          >
-            <motion.span
-              whileHover={prefersReduced ? undefined : { scale: 1.1, rotate: -6 }}
-              transition={{ type: 'spring', stiffness: 320, damping: 16 }}
-              className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-chocolate-gradient font-display text-lg text-cream-100 shadow-soft"
-            >
-              {item.step}
-            </motion.span>
-            <h3 className="mt-5 text-lg font-semibold text-primary">
-              {item.title}
-            </h3>
-            <p className="mt-2 text-sm leading-relaxed text-muted">
-              {item.text}
-            </p>
-          </motion.div>
-        ))}
-      </motion.div>
     </section>
   );
 }

@@ -1,6 +1,7 @@
 'use client';
 
-import { motion, useReducedMotion, type Variants } from 'framer-motion';
+import { motion, type Variants } from 'framer-motion';
+import { useReducedMotion } from '@/lib/motion';
 
 /** Shared easing across the whole site — soft, decelerating, no overshoot. */
 export const EASE = [0.16, 1, 0.3, 1] as const;
@@ -8,24 +9,25 @@ export const EASE = [0.16, 1, 0.3, 1] as const;
 type Direction = 'up' | 'down' | 'left' | 'right' | 'none';
 
 const OFFSET: Record<Direction, { x?: number; y?: number }> = {
-  up: { y: 40 },
-  down: { y: -40 },
-  left: { x: 40 },
-  right: { x: -40 },
+  up: { y: 32 },
+  down: { y: -32 },
+  left: { x: 32 },
+  right: { x: -32 },
   none: {},
 };
 
 /**
- * Scroll-triggered reveal: the element rises, fades and resolves its blur.
+ * Scroll-triggered reveal: the element rises and fades in.
  * Use `delay` to cascade siblings that are not inside a Stagger container.
  */
 export default function Reveal({
   children,
   direction = 'up',
   delay = 0,
-  duration = 0.8,
+  duration = 0.9,
   className,
   once = true,
+  amount = 0.25,
 }: {
   children: React.ReactNode;
   direction?: Direction;
@@ -33,18 +35,16 @@ export default function Reveal({
   duration?: number;
   className?: string;
   once?: boolean;
+  amount?: number;
 }) {
   const prefersReduced = useReducedMotion();
 
   const variants: Variants = {
-    hidden: prefersReduced
-      ? { opacity: 0 }
-      : { opacity: 0, filter: 'blur(10px)', ...OFFSET[direction] },
+    hidden: prefersReduced ? { opacity: 0 } : { opacity: 0, ...OFFSET[direction] },
     visible: {
       opacity: 1,
       x: 0,
       y: 0,
-      filter: 'blur(0px)',
       transition: { duration, delay, ease: EASE },
     },
   };
@@ -54,7 +54,7 @@ export default function Reveal({
       variants={variants}
       initial="hidden"
       whileInView="visible"
-      viewport={{ once, amount: 0.25 }}
+      viewport={{ once, amount }}
       className={className}
     >
       {children}

@@ -1,7 +1,8 @@
 'use client';
 
 import { useRef } from 'react';
-import { motion, useMotionValue, useReducedMotion, useSpring } from 'framer-motion';
+import { motion, useMotionValue, useSpring } from 'framer-motion';
+import { useReducedMotion } from '@/lib/motion';
 
 /**
  * Pulls its child toward the pointer while hovered, then springs back.

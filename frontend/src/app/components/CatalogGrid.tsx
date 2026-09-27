@@ -1,72 +1,69 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { filterProducts } from '@/lib/catalog';
 import type { Product } from '@/types/product';
+import { Cake, Search } from './icons';
 import { useSiteLang } from './LocaleProvider';
 import { useSearch } from './SearchProvider';
 import ProductCard from './ProductCard';
 
-/** Container variant so the cards appear one after another. */
-const gridVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.09, delayChildren: 0.1 },
-  },
-};
+function EmptyState({
+  icon,
+  title,
+  text,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  text: string;
+}) {
+  return (
+    <div className="mx-auto max-w-md rounded-3xl border border-line bg-cream-50/70 p-10 text-center">
+      <span className="mx-auto grid h-14 w-14 place-items-center rounded-full border border-line text-chocolate-400">
+        {icon}
+      </span>
+      <p className="mt-5 font-display text-2xl text-primary">{title}</p>
+      <p className="mt-2 text-sm leading-relaxed text-muted">{text}</p>
+    </div>
+  );
+}
 
 export default function CatalogGrid({ products }: { products: Product[] }) {
   const { t } = useSiteLang();
   const { query } = useSearch();
 
-  const q = query.trim().toLowerCase();
-  const visible = q
-    ? products.filter((p) => p.name.toLowerCase().includes(q))
-    : products;
+  const visible = filterProducts(products, query);
 
   // No products at all — the catalogue itself is empty.
   if (products.length === 0) {
     return (
-      <div className="card mx-auto max-w-md p-10 text-center">
-        <span className="text-4xl">🍰</span>
-        <p className="mt-4 font-display text-lg text-primary">
-          {t.catalogEmptyTitle}
-        </p>
-        <p className="mt-2 text-sm leading-relaxed text-muted">
-          {t.catalogEmptyText}
-        </p>
-      </div>
+      <EmptyState
+        icon={<Cake className="h-6 w-6" />}
+        title={t.catalogEmptyTitle}
+        text={t.catalogEmptyText}
+      />
     );
   }
 
   // Products exist, but the search matched none.
   if (visible.length === 0) {
     return (
-      <div className="card mx-auto max-w-md p-10 text-center">
-        <span className="text-4xl">🔍</span>
-        <p className="mt-4 font-display text-lg text-primary">
-          {t.searchNoResults(query.trim())}
-        </p>
-        <p className="mt-2 text-sm leading-relaxed text-muted">
-          {t.catalogEmptyText}
-        </p>
-      </div>
+      <EmptyState
+        icon={<Search className="h-6 w-6" />}
+        title={t.searchNoResults(query.trim())}
+        text={t.catalogEmptyText}
+      />
     );
   }
 
   return (
-    <motion.div
-      // Re-run the stagger whenever the filtered set changes.
-      key={q}
-      variants={gridVariants}
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, amount: 0.05 }}
-      className="grid grid-cols-1 gap-7 sm:grid-cols-2 lg:grid-cols-3"
+    <div
+      // Re-run the reveals whenever the filtered set changes.
+      key={query.trim().toLowerCase()}
+      className="grid grid-cols-1 gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3 lg:gap-x-8"
     >
-      {visible.map((product) => (
-        <ProductCard key={product.id} product={product} />
+      {visible.map((product, index) => (
+        <ProductCard key={product.id} product={product} index={index} />
       ))}
-    </motion.div>
+    </div>
   );
 }

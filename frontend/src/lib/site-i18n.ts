@@ -20,6 +20,7 @@ const de = {
   orderNow: 'Jetzt bestellen',
   menuOpen: 'Menü öffnen',
   menuClose: 'Menü schließen',
+  menuLabel: 'Navigation',
 
   // --- Hero ---
   heroEyebrow: 'Handgemacht · Natürliche Zutaten',
@@ -28,13 +29,15 @@ const de = {
     'Keine Anmeldung, kein Warenkorb — Sie wählen Ihre Torte und schreiben uns direkt per WhatsApp oder Telegram.',
   heroCtaCatalog: 'Torten entdecken',
   heroCtaAdvice: 'Beratung per WhatsApp',
+  heroImageAlt: 'Schokoladentorte mit frischen Beeren',
+  heroSecondaryAlt: 'Weiße Torte mit frischen Blüten',
+  heroScroll: 'Scrollen',
   statCustomers: 'glückliche Kunden',
   statHomemade: 'hausgemacht',
   statLeadTime: 'Vorlaufzeit',
   statLeadTimeValue: ' Std',
   heroBadgeTitle: 'Täglich frisch gebacken',
   heroBadgeText: 'Ohne Konservierungsstoffe, nach Familienrezept.',
-  scrollHint: '↓ scrollen',
 
   // --- Marquee band between the sections ---
   marqueeWords: [
@@ -47,7 +50,11 @@ const de = {
   // --- Rotating sticker on the product gallery ---
   badgeRing: 'Täglich frisch · Hausgemacht · ',
 
-  // --- Features ---
+  // --- Values ---
+  valuesEyebrow: 'Unsere Backstube',
+  valuesTitle: 'Was in jeder Torte steckt',
+  valuesLead:
+    'Vier Dinge, auf die wir bei jeder einzelnen Torte achten — vom ersten Rühren bis zur letzten Verzierung.',
   featureCraftTitle: 'Handarbeit',
   featureCraftText:
     'Jede Torte wird einzeln von Hand gefertigt — keine Fertigmischungen.',
@@ -65,6 +72,7 @@ const de = {
   catalogTitle: 'Torten aus unserer Backstube',
   catalogLead:
     'Wählen Sie Ihre Lieblingstorte, prüfen Sie Zutaten und Allergene und schreiben Sie uns direkt — ganz ohne Anmeldung.',
+  catalogCount: (n: number) => (n === 1 ? '1 Torte' : `${n} Torten`),
   searchPlaceholder: 'Torte nach Namen suchen …',
   searchClear: 'Suche zurücksetzen',
   searchNoResults: (q: string) => `Keine Torte für „${q}“ gefunden.`,
@@ -75,11 +83,22 @@ const de = {
   catalogDownText:
     'Bitte versuchen Sie es in Kürze noch einmal oder schreiben Sie uns direkt per WhatsApp.',
   cardCta: 'Zur Torte',
+  cursorView: 'Ansehen',
   moreAllergens: (n: number) => `+${n} weitere`,
+
+  // --- Signature showcase ---
+  signatureEyebrow: 'Ausgewählt',
+  signatureTitle: 'Eine kleine Auswahl',
+  signatureLead:
+    'Vier Torten aus dem Sortiment, groß gezeigt — einfach weiterscrollen.',
+  signatureHint: 'Weiterscrollen',
+  signatureAll: 'Alle Torten ansehen',
 
   // --- How it works ---
   howEyebrow: 'In drei Schritten',
   howTitle: 'So einfach bestellen Sie',
+  howLead:
+    'Kein Konto, kein Warenkorb. Sie schreiben uns — wir antworten persönlich.',
   step1Title: 'Torte aussuchen',
   step1Text:
     'Stöbern Sie im Katalog und öffnen Sie die Torte, die Ihnen gefällt.',
@@ -95,6 +114,10 @@ const de = {
   ctaText:
     'Hochzeit, Geburtstag oder Firmenfeier — schreiben Sie uns Ihre Idee, und wir backen sie. Beratung ist selbstverständlich kostenlos.',
   ctaWhatsapp: 'WhatsApp schreiben',
+  ctaHoursLabel: 'Öffnungszeiten',
+  ctaAddressLabel: 'Adresse',
+  ctaPhoneLabel: 'Telefon',
+  ctaMessengerLabel: 'Messenger',
 
   // --- Footer ---
   footerDescription:
@@ -106,6 +129,7 @@ const de = {
   footerContact: 'Kontakt',
   footerFollow: 'Folgen Sie uns',
   footerRights: 'Alle Rechte vorbehalten.',
+  backToTop: 'Nach oben',
 
   // --- Product page ---
   breadcrumbHome: 'Startseite',
@@ -120,11 +144,13 @@ const de = {
     'Kein Warenkorb, keine Anmeldung — Ihre Nachricht ist bereits vorbereitet, Sie müssen sie nur noch abschicken.',
   orderWhatsapp: 'Per WhatsApp bestellen',
   orderTelegram: 'Per Telegram bestellen',
-  messagePreview: (message: string) => `Ihre Nachricht lautet: „${message}"`,
+  messagePreview: (message: string) => `Ihre Nachricht lautet: „${message}“`,
   backToOverview: 'Zurück zur Übersicht',
   relatedEyebrow: 'Passt auch dazu',
   relatedTitle: 'Weitere Torten',
   imageLabel: (name: string, index: number) => `${name} — Bild ${index}`,
+  galleryPrev: 'Vorheriges Bild',
+  galleryNext: 'Nächstes Bild',
   containsAllergen: (label: string) => `Enthält ${label}`,
 
   // --- 404 ---
@@ -135,7 +161,7 @@ const de = {
 
   // --- Order message sent to WhatsApp / Telegram ---
   orderMessage: (brand: string, product: string) =>
-    `Hallo ${brand}! Ich interessiere mich für „${product}" und möchte gerne bestellen.`,
+    `Hallo ${brand}! Ich interessiere mich für „${product}“ und möchte gerne bestellen.`,
 };
 
 type Dictionary = typeof de;
@@ -148,6 +174,7 @@ const en: Dictionary = {
   orderNow: 'Order now',
   menuOpen: 'Open menu',
   menuClose: 'Close menu',
+  menuLabel: 'Navigation',
 
   heroEyebrow: 'Handmade · Natural ingredients',
   heroSubline: 'fine cakes from our bakery',
@@ -155,13 +182,15 @@ const en: Dictionary = {
     'No sign-up, no shopping cart — pick your cake and message us directly on WhatsApp or Telegram.',
   heroCtaCatalog: 'Explore our cakes',
   heroCtaAdvice: 'Ask us on WhatsApp',
+  heroImageAlt: 'Chocolate cake with fresh berries',
+  heroSecondaryAlt: 'White cake with fresh flowers',
+  heroScroll: 'Scroll',
   statCustomers: 'happy customers',
   statHomemade: 'homemade',
   statLeadTime: 'lead time',
   statLeadTimeValue: ' hrs',
   heroBadgeTitle: 'Baked fresh every day',
   heroBadgeText: 'No preservatives, made to a family recipe.',
-  scrollHint: '↓ scroll',
 
   marqueeWords: [
     'Handmade',
@@ -172,6 +201,10 @@ const en: Dictionary = {
 
   badgeRing: 'Fresh daily · Homemade · ',
 
+  valuesEyebrow: 'Our bakery',
+  valuesTitle: 'What goes into every cake',
+  valuesLead:
+    'Four things we care about in every single cake — from the first whisk to the last decoration.',
   featureCraftTitle: 'Handmade',
   featureCraftText:
     'Every cake is made individually by hand — never from a ready mix.',
@@ -188,6 +221,7 @@ const en: Dictionary = {
   catalogTitle: 'Cakes from our bakery',
   catalogLead:
     'Choose your favourite, check the ingredients and allergens, and message us directly — no sign-up needed.',
+  catalogCount: (n: number) => (n === 1 ? '1 cake' : `${n} cakes`),
   searchPlaceholder: 'Search cakes by name …',
   searchClear: 'Clear search',
   searchNoResults: (q: string) => `No cake found for “${q}”.`,
@@ -198,10 +232,19 @@ const en: Dictionary = {
   catalogDownText:
     'Please try again shortly, or message us directly on WhatsApp.',
   cardCta: 'View cake',
+  cursorView: 'View',
   moreAllergens: (n: number) => `+${n} more`,
+
+  signatureEyebrow: 'Hand-picked',
+  signatureTitle: 'A small selection',
+  signatureLead:
+    'Four cakes from the range, shown large — just keep scrolling.',
+  signatureHint: 'Keep scrolling',
+  signatureAll: 'See all cakes',
 
   howEyebrow: 'In three steps',
   howTitle: 'Ordering is simple',
+  howLead: 'No account, no cart. You message us — we reply in person.',
   step1Title: 'Choose a cake',
   step1Text: 'Browse the catalogue and open the cake you like.',
   step2Title: 'Check the details',
@@ -215,6 +258,10 @@ const en: Dictionary = {
   ctaText:
     'Wedding, birthday or company party — tell us your idea and we will bake it. Advice is free, of course.',
   ctaWhatsapp: 'Message on WhatsApp',
+  ctaHoursLabel: 'Opening hours',
+  ctaAddressLabel: 'Address',
+  ctaPhoneLabel: 'Phone',
+  ctaMessengerLabel: 'Messengers',
 
   footerDescription:
     'Fine cakes from natural ingredients, baked fresh every day. Order conveniently via WhatsApp or Telegram.',
@@ -225,6 +272,7 @@ const en: Dictionary = {
   footerContact: 'Contact',
   footerFollow: 'Follow us',
   footerRights: 'All rights reserved.',
+  backToTop: 'Back to top',
 
   breadcrumbHome: 'Home',
   breadcrumbCakes: 'Cakes',
@@ -243,6 +291,8 @@ const en: Dictionary = {
   relatedEyebrow: 'You might also like',
   relatedTitle: 'More cakes',
   imageLabel: (name: string, index: number) => `${name} — image ${index}`,
+  galleryPrev: 'Previous image',
+  galleryNext: 'Next image',
   containsAllergen: (label: string) => `Contains ${label}`,
 
   notFoundTitle: 'This page does not exist',

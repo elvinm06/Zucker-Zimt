@@ -1,224 +1,221 @@
 'use client';
 
 import { useRef } from 'react';
+import Image from 'next/image';
 import {
   motion,
-  useMotionTemplate,
   useMotionValue,
-  useReducedMotion,
   useScroll,
   useSpring,
   useTransform,
   type Variants,
 } from 'framer-motion';
+import { useReducedMotion } from '@/lib/motion';
+import { useIntroReady } from '@/lib/intro';
+import { scrollToTarget } from '@/lib/scroll';
+import { WhatsAppIcon } from './BrandIcons';
+import { ArrowDown, ArrowRight, Sparkles } from './icons';
+import AnimatedNumber from './AnimatedNumber';
+import LogoMark from './LogoMark';
 import { useSiteLang } from './LocaleProvider';
 import { useSettings } from './SettingsProvider';
-import AnimatedNumber from './AnimatedNumber';
-import CakeSearch from './CakeSearch';
-import FloatingDecor from './motion/FloatingDecor';
 import Magnetic from './motion/Magnetic';
 import { EASE } from './motion/Reveal';
+import RotatingBadge from './motion/RotatingBadge';
 import SplitText from './motion/SplitText';
 
-
+const HERO_IMAGE =
+  'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=1200&q=80';
+const HERO_IMAGE_SMALL =
+  'https://images.unsplash.com/photo-1535254973040-607b474cb50d?w=600&q=80';
 
 const container: Variants = {
   hidden: {},
-  visible: { transition: { staggerChildren: 0.075, delayChildren: 0.15 } },
+  visible: { transition: { staggerChildren: 0.09, delayChildren: 0.2 } },
 };
 
 const fadeUp: Variants = {
-  hidden: { y: 26, opacity: 0, filter: 'blur(6px)' },
+  hidden: { y: 28, opacity: 0 },
+  visible: { y: 0, opacity: 1, transition: { duration: 0.9, ease: EASE } },
+};
+
+const imageReveal: Variants = {
+  hidden: { clipPath: 'inset(100% 0 0 0 round 2.75rem)' },
   visible: {
-    y: 0,
+    clipPath: 'inset(0% 0 0 0 round 2.75rem)',
+    transition: { duration: 1.3, ease: EASE, delay: 0.35 },
+  },
+};
+
+const imageZoom: Variants = {
+  hidden: { scale: 1.25 },
+  visible: { scale: 1, transition: { duration: 1.8, ease: EASE, delay: 0.35 } },
+};
+
+const secondary: Variants = {
+  hidden: { opacity: 0, y: 40, rotate: -8 },
+  visible: {
     opacity: 1,
-    filter: 'blur(0px)',
-    transition: { duration: 0.8, ease: EASE },
+    y: 0,
+    rotate: -4,
+    transition: { duration: 1, ease: EASE, delay: 1 },
   },
 };
 
 export default function Hero() {
   const settings = useSettings();
   const { t } = useSiteLang();
+  const prefersReduced = useReducedMotion();
+  // Plays only once the intro curtain has lifted (or immediately when there
+  // is no intro), so the entrance is seen instead of hidden.
+  const ready = useIntroReady();
+  const ref = useRef<HTMLElement>(null);
 
   const stats = [
     { value: 500, suffix: '+', label: t.statCustomers },
     { value: 100, suffix: ' %', label: t.statHomemade },
     { value: 48, suffix: t.statLeadTimeValue, label: t.statLeadTime },
   ];
-  const prefersReduced = useReducedMotion();
-  const sectionRef = useRef<HTMLElement>(null);
-  const imageRef = useRef<HTMLDivElement>(null);
 
-  // --- Scroll parallax: image and blobs drift at different speeds ---
+  // --- Scroll parallax: copy, image and the rings drift at different speeds ---
   const { scrollYProgress } = useScroll({
-    target: sectionRef,
+    target: ref,
     offset: ['start start', 'end start'],
   });
-  const imageY = useTransform(scrollYProgress, [0, 1], ['0%', '14%']);
-  const copyY = useTransform(scrollYProgress, [0, 1], ['0%', '32%']);
-  const heroFade = useTransform(scrollYProgress, [0, 0.85], [1, 0]);
+  const copyY = useTransform(scrollYProgress, [0, 1], ['0%', '28%']);
+  const imageY = useTransform(scrollYProgress, [0, 1], ['0%', '12%']);
+  const imageScale = useTransform(scrollYProgress, [0, 1], [1, 1.12]);
+  const fade = useTransform(scrollYProgress, [0, 0.7], [1, 0]);
+  const ringRotate = useTransform(scrollYProgress, [0, 1], [0, 60]);
 
-  // --- Pointer-driven 3D tilt, smoothed by springs ---
-  const tiltX = useSpring(useMotionValue(0), {
-    stiffness: 150,
-    damping: 18,
-    mass: 0.6,
-  });
-  const tiltY = useSpring(useMotionValue(0), {
-    stiffness: 150,
-    damping: 18,
-    mass: 0.6,
-  });
-  // The highlight follows the pointer so the card looks lit from that side.
-  const glareX = useSpring(useMotionValue(50), { stiffness: 120, damping: 20 });
-  const glareY = useSpring(useMotionValue(50), { stiffness: 120, damping: 20 });
-  const glare = useMotionTemplate`radial-gradient(circle at ${glareX}% ${glareY}%, rgba(255,253,250,0.38), transparent 55%)`;
+  // --- Pointer parallax on the photo, smoothed by springs ---
+  const pointerX = useSpring(useMotionValue(0), { stiffness: 120, damping: 20 });
+  const pointerY = useSpring(useMotionValue(0), { stiffness: 120, damping: 20 });
 
   function handlePointerMove(e: React.PointerEvent<HTMLDivElement>) {
-    if (prefersReduced || !imageRef.current) return;
-
-    const rect = imageRef.current.getBoundingClientRect();
-    const px = (e.clientX - rect.left) / rect.width;
-    const py = (e.clientY - rect.top) / rect.height;
-
-    // Max 9° of rotation keeps it elegant rather than gimmicky.
-    tiltY.set((px - 0.5) * 18);
-    tiltX.set((0.5 - py) * 18);
-    glareX.set(px * 100);
-    glareY.set(py * 100);
+    if (prefersReduced) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const px = (e.clientX - rect.left) / rect.width - 0.5;
+    const py = (e.clientY - rect.top) / rect.height - 0.5;
+    pointerX.set(px * -16);
+    pointerY.set(py * -16);
   }
 
   function handlePointerLeave() {
-    tiltX.set(0);
-    tiltY.set(0);
-    glareX.set(50);
-    glareY.set(50);
+    pointerX.set(0);
+    pointerY.set(0);
   }
 
+  const initial = prefersReduced ? 'visible' : 'hidden';
+  const state = prefersReduced || ready ? 'visible' : 'hidden';
+
   return (
-    <section ref={sectionRef} className="relative overflow-hidden bg-cream-gradient">
-      {/* Slowly drifting blobs — each on its own loop so they never sync up. */}
-      <motion.div
+    <section ref={ref} className="relative overflow-hidden">
+      {/* Decorative dotted rings — turn slowly with the scroll. */}
+      <motion.svg
         aria-hidden
-        className="blob -left-32 -top-24 h-96 w-96 bg-caramel-300/30"
-        animate={
-          prefersReduced ? {} : { x: [0, 40, -20, 0], y: [0, -30, 20, 0] }
-        }
-        transition={{ duration: 26, repeat: Infinity, ease: 'easeInOut' }}
-      />
-      <motion.div
+        style={prefersReduced ? undefined : { rotate: ringRotate }}
+        viewBox="0 0 600 600"
+        fill="none"
+        className="pointer-events-none absolute -right-52 -top-64 h-[46rem] w-[46rem] text-chocolate-300/40 lg:-right-36 lg:-top-56"
+      >
+        <circle cx="300" cy="300" r="290" stroke="currentColor" strokeDasharray="2 12" />
+        <circle cx="300" cy="300" r="220" stroke="currentColor" strokeOpacity="0.5" />
+        <circle
+          cx="300"
+          cy="300"
+          r="120"
+          stroke="currentColor"
+          strokeDasharray="1 8"
+          strokeOpacity="0.7"
+        />
+      </motion.svg>
+      <div
         aria-hidden
-        className="blob -bottom-40 right-[-10%] h-[28rem] w-[28rem] bg-chocolate-300/25"
-        animate={
-          prefersReduced ? {} : { x: [0, -50, 25, 0], y: [0, 25, -20, 0] }
-        }
-        transition={{ duration: 32, repeat: Infinity, ease: 'easeInOut' }}
-      />
-      <motion.div
-        aria-hidden
-        className="blob left-1/2 top-1/3 h-64 w-64 bg-cream-500/30"
-        animate={prefersReduced ? {} : { scale: [1, 1.18, 0.95, 1] }}
-        transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut' }}
+        className="blob -left-40 top-1/3 h-[30rem] w-[30rem] bg-caramel-300/25"
       />
 
-      {/* Bakery bits at different depths, following the pointer. */}
-      <FloatingDecor />
-
       <motion.div
-        style={prefersReduced ? undefined : { opacity: heroFade }}
-        initial="hidden"
-        animate="visible"
-        variants={container}
-        className="relative mx-auto grid max-w-6xl items-center gap-14 px-5 py-20 sm:py-28 lg:grid-cols-[1.05fr_0.95fr]"
+        style={prefersReduced ? undefined : { opacity: fade }}
+        className="wrap relative grid min-h-[calc(100svh-4.5rem)] items-center gap-14 py-14 lg:grid-cols-12 lg:gap-10 lg:py-20"
       >
         {/* --- Copy --- */}
         <motion.div
+          variants={container}
+          initial={initial}
+          animate={state}
           style={prefersReduced ? undefined : { y: copyY }}
-          className="text-center lg:text-left"
+          className="lg:col-span-7"
         >
           <motion.span variants={fadeUp} className="eyebrow">
-            <motion.span
-              aria-hidden
-              animate={prefersReduced ? {} : { rotate: [0, 180, 360] }}
-              transition={{ duration: 9, repeat: Infinity, ease: 'linear' }}
-              className="inline-block"
-            >
-              ✦
-            </motion.span>
             {t.heroEyebrow}
           </motion.span>
 
-          <h1 className="mt-6 text-4xl font-semibold leading-[1.08] text-primary sm:text-6xl">
+          <h1 className="mt-7 text-display-xl font-medium text-primary">
             <SplitText
               text={settings.name}
-              trigger="mount"
-              delay={0.15}
+              trigger="manual"
+              play={state === 'visible'}
+              delay={0.25}
               className="block"
             />
             <SplitText
               text={t.heroSubline}
-              trigger="mount"
-              delay={0.5}
-              className="mt-3 block bg-gradient-to-r from-caramel-500 to-chocolate-400 bg-clip-text text-2xl font-normal italic text-transparent sm:text-3xl"
+              trigger="manual"
+              play={state === 'visible'}
+              delay={0.6}
+              stagger={0.06}
+              className="font-soft mt-4 block text-display-md font-normal italic text-accent"
             />
           </h1>
 
           <motion.p
             variants={fadeUp}
-            className="mx-auto mt-6 max-w-lg text-lg leading-relaxed text-muted lg:mx-0"
+            className="mt-8 max-w-xl text-pretty text-lg leading-relaxed text-muted"
           >
             {settings.tagline}. {t.heroLead}
           </motion.p>
 
           <motion.div
             variants={fadeUp}
-            className="mt-9 flex flex-col items-center gap-3 sm:flex-row lg:justify-start"
+            className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center"
           >
-            <Magnetic className="w-full sm:w-auto">
-            <motion.a
-              href="#katalog"
-              className="btn-primary w-full sm:w-auto"
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-              transition={{ type: 'spring', stiffness: 400, damping: 22 }}
-            >
-              {t.heroCtaCatalog}
-            </motion.a>
+            <Magnetic strength={0.2} className="w-full sm:w-auto">
+              <a
+                href="#katalog"
+                onClick={(e) => {
+                  e.preventDefault();
+                  scrollToTarget('#katalog', { offset: -80 });
+                }}
+                className="btn-primary group w-full sm:w-auto"
+              >
+                {t.heroCtaCatalog}
+                <ArrowRight className="h-4 w-4 transition-transform duration-500 ease-expo group-hover:translate-x-1" />
+              </a>
             </Magnetic>
-            <Magnetic className="w-full sm:w-auto">
-            <motion.a
-              href={`https://wa.me/${settings.whatsapp}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-ghost w-full sm:w-auto"
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-              transition={{ type: 'spring', stiffness: 400, damping: 22 }}
-            >
-              {t.heroCtaAdvice}
-            </motion.a>
+            <Magnetic strength={0.2} className="w-full sm:w-auto">
+              <a
+                href={`https://wa.me/${settings.whatsapp}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-ghost w-full sm:w-auto"
+              >
+                <WhatsAppIcon className="h-4 w-4" />
+                {t.heroCtaAdvice}
+              </a>
             </Magnetic>
-          </motion.div>
-
-          {/* Search the catalogue by cake name. */}
-          <motion.div
-            variants={fadeUp}
-            className="mt-6 flex justify-center lg:justify-start"
-          >
-            <CakeSearch />
           </motion.div>
 
           <motion.dl
             variants={fadeUp}
-            className="mt-12 grid grid-cols-3 gap-4 border-t border-cream-300/80 pt-8"
+            className="mt-14 grid max-w-xl grid-cols-3 gap-6 border-t border-line pt-8"
           >
             {stats.map((stat) => (
               <div key={stat.label}>
-                <dt className="font-display text-2xl font-semibold text-primary sm:text-3xl">
+                <dt className="font-display text-3xl text-primary sm:text-4xl">
                   <AnimatedNumber value={stat.value} suffix={stat.suffix} />
                 </dt>
-                <dd className="mt-1 text-xs text-muted sm:text-sm">
+                <dd className="mt-1.5 text-xs text-muted sm:text-sm">
                   {stat.label}
                 </dd>
               </div>
@@ -226,129 +223,109 @@ export default function Hero() {
           </motion.dl>
         </motion.div>
 
-        {/* --- Image with tilt, parallax and a sweeping shine --- */}
+        {/* --- Photo: clip reveal, scroll parallax, pointer drift --- */}
         <motion.div
-          variants={fadeUp}
-          style={prefersReduced ? undefined : { y: imageY }}
-          className="relative mx-auto hidden aspect-square w-full max-w-md lg:block"
-          // Perspective must sit on the parent for the child rotation to read as 3D.
+          initial={initial}
+          animate={state}
           onPointerMove={handlePointerMove}
           onPointerLeave={handlePointerLeave}
+          className="relative mx-auto w-full max-w-md lg:col-span-5 lg:max-w-none"
         >
-          <div style={{ perspective: 1200 }} className="h-full w-full">
-            <motion.div
-              ref={imageRef}
-              style={{ rotateX: tiltX, rotateY: tiltY, transformStyle: 'preserve-3d' }}
-              className="relative h-full w-full"
-            >
+          <motion.div
+            variants={imageReveal}
+            style={prefersReduced ? undefined : { y: imageY }}
+            className="relative aspect-[4/5] overflow-hidden rounded-4xl bg-cream-200 shadow-lift"
+          >
+            <motion.div variants={imageZoom} className="absolute inset-0">
               <motion.div
-                aria-hidden
-                className="absolute inset-0 rotate-3 rounded-4xl bg-caramel-gradient opacity-30 blur-2xl"
-                animate={prefersReduced ? {} : { opacity: [0.22, 0.4, 0.22] }}
-                transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
-              />
-
-              <motion.div
-                initial={
+                style={
                   prefersReduced
                     ? undefined
-                    : { clipPath: 'inset(12% 12% 12% 12% round 2.75rem)', scale: 1.12 }
+                    : { scale: imageScale, x: pointerX, y: pointerY }
                 }
-                animate={
-                  prefersReduced
-                    ? undefined
-                    : { clipPath: 'inset(0% 0% 0% 0% round 2.75rem)', scale: 1 }
-                }
-                transition={{ duration: 1.3, ease: EASE, delay: 0.25 }}
-                className="absolute inset-0 overflow-hidden rounded-4xl border border-cream-300/80 bg-cream-200 bg-cover bg-center shadow-lift"
-                style={{
-                  backgroundImage:
-                    'url(https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=900&q=80)',
-                }}
+                className="absolute -inset-[4%]"
               >
-                {/* Pointer-following highlight. */}
-                <motion.div
-                  aria-hidden
-                  className="pointer-events-none absolute inset-0 mix-blend-soft-light"
-                  style={prefersReduced ? undefined : { background: glare }}
+                <Image
+                  src={HERO_IMAGE}
+                  alt={t.heroImageAlt}
+                  fill
+                  priority
+                  sizes="(max-width: 1024px) 100vw, 40vw"
+                  className="object-cover"
                 />
-
-                {/* Slow shine sweep across the surface. */}
-                {!prefersReduced && (
-                  <motion.div
-                    aria-hidden
-                    className="pointer-events-none absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-cream-50/35 to-transparent"
-                    animate={{ x: ['-150%', '400%'] }}
-                    transition={{
-                      duration: 2.4,
-                      repeat: Infinity,
-                      repeatDelay: 5,
-                      ease: 'easeInOut',
-                    }}
-                  />
-                )}
-              </motion.div>
-
-              {/* Floating badge — lifted toward the viewer on the Z axis. */}
-              <motion.div
-                // `z` must go through Framer, not a raw CSS transform —
-                // Framer owns the transform property and would overwrite it.
-                initial={{ opacity: 0, y: 30, scale: 0.9, z: 60 }}
-                animate={{ opacity: 1, y: 0, scale: 1, z: 60 }}
-                transition={{
-                  type: 'spring',
-                  stiffness: 200,
-                  damping: 18,
-                  delay: 1.1,
-                }}
-                className="absolute -bottom-6 -left-8 w-56 rounded-3xl border border-cream-300/80 bg-cream-50/95 p-4 shadow-lift backdrop-blur"
-              >
-                <motion.div
-                  animate={prefersReduced ? {} : { y: [0, -9, 0] }}
-                  transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
-                >
-                  <p className="text-sm font-medium text-primary">
-                    {t.heroBadgeTitle}
-                  </p>
-                  <p className="mt-1 text-xs text-muted">
-                    {t.heroBadgeText}
-                  </p>
-                </motion.div>
               </motion.div>
             </motion.div>
-          </div>
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-chocolate-900/40 via-transparent to-transparent" />
+
+            {/* Freshness note, sitting on the photo. */}
+            <motion.div
+              variants={fadeUp}
+              className="absolute bottom-5 left-5 right-5 flex items-center gap-4 rounded-2xl border border-cream-100/30 bg-cream-50/85 p-4 backdrop-blur-md sm:right-auto sm:max-w-[17rem]"
+            >
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-primary text-cream-100">
+                <Sparkles className="h-4 w-4" />
+              </span>
+              <div>
+                <p className="text-sm font-medium text-primary">
+                  {t.heroBadgeTitle}
+                </p>
+                <p className="mt-0.5 text-xs leading-snug text-muted">
+                  {t.heroBadgeText}
+                </p>
+              </div>
+            </motion.div>
+          </motion.div>
+
+          {/* Second photo, tucked behind the corner. */}
+          <motion.div
+            variants={secondary}
+            className="absolute -left-6 top-10 hidden w-36 overflow-hidden rounded-3xl border-4 border-surface shadow-lift lg:block xl:-left-14 xl:w-44"
+          >
+            <div className="relative aspect-square">
+              <Image
+                src={HERO_IMAGE_SMALL}
+                alt={t.heroSecondaryAlt}
+                fill
+                sizes="176px"
+                className="object-cover"
+              />
+            </div>
+          </motion.div>
+
+          <RotatingBadge
+            ring={t.badgeRing}
+            delay={1.3}
+            className="absolute -right-3 -top-6 w-28 sm:-right-6 sm:w-32"
+          >
+            <LogoMark className="h-9 w-9 text-primary" />
+          </RotatingBadge>
         </motion.div>
       </motion.div>
 
-      {/* Scroll cue — a dot runs down the track; fades once scrolling starts. */}
+      {/* Scroll cue — fades out as the hero scrolls away. */}
       <motion.div
-        aria-hidden
-        style={prefersReduced ? { x: '-50%' } : { opacity: heroFade, x: '-50%' }}
-        className="absolute bottom-10 left-1/2 hidden lg:block"
+        style={prefersReduced ? undefined : { opacity: fade }}
+        className="absolute bottom-8 left-5 hidden sm:left-8 lg:left-10 lg:block"
       >
-        <motion.a
-          href="#katalog"
-          initial={{ opacity: 0, y: -12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: EASE, delay: 1.7 }}
-          className="pointer-events-auto flex flex-col items-center gap-2 text-muted transition-colors hover:text-primary"
+        <motion.button
+          type="button"
+          onClick={() => scrollToTarget('#katalog', { offset: -80 })}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: state === 'visible' ? 1 : 0 }}
+          transition={{ delay: 1.6, duration: 0.8 }}
+          className="group flex items-center gap-3 text-muted transition-colors hover:text-primary"
         >
-          <span className="text-[10px] uppercase tracking-[0.3em]">
-            {t.scrollHint.replace('↓', '').trim()}
-          </span>
-          <span className="relative block h-8 w-px overflow-hidden rounded-full bg-chocolate-200/70">
+          <span className="grid h-10 w-10 place-items-center rounded-full border border-line transition-colors group-hover:border-primary/40">
             <motion.span
-              className="absolute left-0 top-0 h-3 w-px bg-caramel-500"
-              animate={prefersReduced ? undefined : { y: [-12, 36] }}
-              transition={{
-                duration: 1.6,
-                repeat: Infinity,
-                repeatDelay: 0.4,
-                ease: 'easeInOut',
-              }}
-            />
+              animate={prefersReduced ? undefined : { y: [0, 4, 0] }}
+              transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+              className="block"
+            >
+              <ArrowDown className="h-4 w-4" />
+            </motion.span>
           </span>
-        </motion.a>
+          <span className="label-mono">{t.heroScroll}</span>
+        </motion.button>
       </motion.div>
     </section>
   );

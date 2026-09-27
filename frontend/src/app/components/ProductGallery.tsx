@@ -1,25 +1,23 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import {
   AnimatePresence,
   motion,
-  useMotionTemplate,
-  useMotionValue,
-  useReducedMotion,
   useScroll,
-  useSpring,
   useTransform,
 } from 'framer-motion';
+import { useReducedMotion } from '@/lib/motion';
+import { Cake, ChevronLeft, ChevronRight } from './icons';
 import { useSiteLang } from './LocaleProvider';
 import { EASE } from './motion/Reveal';
 import RotatingBadge from './motion/RotatingBadge';
 
 /**
- * Product images: reveals with a clip-path wipe, tilts toward the pointer,
- * drifts against the scroll and cross-fades between thumbnails. The
- * optional rotating sticker sits on the image corner, outside the tilt.
+ * Product images: reveals with a clip-path wipe, drifts against the scroll
+ * and cross-fades between thumbnails (arrows and ←/→ keys as well). The
+ * optional rotating sticker sits on the image corner.
  */
 export default function ProductGallery({
   images,
@@ -46,30 +44,24 @@ export default function ProductGallery({
   });
   const parallax = useTransform(scrollYProgress, [0, 1], ['-6%', '6%']);
 
-  const springs = { stiffness: 160, damping: 18, mass: 0.5 };
-  const rotateX = useSpring(useMotionValue(0), springs);
-  const rotateY = useSpring(useMotionValue(0), springs);
-  const glareX = useSpring(useMotionValue(50), springs);
-  const glareY = useSpring(useMotionValue(50), springs);
-  const glare = useMotionTemplate`radial-gradient(circle at ${glareX}% ${glareY}%, rgba(255,253,250,0.32), transparent 58%)`;
+  const count = images.length;
+  const step = useCallback(
+    (delta: number) => setActive((i) => (i + delta + count) % count),
+    [count],
+  );
 
-  function handlePointerMove(e: React.PointerEvent<HTMLDivElement>) {
-    if (prefersReduced || !ref.current) return;
-    const rect = ref.current.getBoundingClientRect();
-    const px = (e.clientX - rect.left) / rect.width;
-    const py = (e.clientY - rect.top) / rect.height;
-    rotateY.set((px - 0.5) * 14);
-    rotateX.set((0.5 - py) * 14);
-    glareX.set(px * 100);
-    glareY.set(py * 100);
-  }
-
-  function reset() {
-    rotateX.set(0);
-    rotateY.set(0);
-    glareX.set(50);
-    glareY.set(50);
-  }
+  // Arrow keys while the gallery is focused.
+  useEffect(() => {
+    if (count < 2) return;
+    const node = ref.current;
+    if (!node) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowRight') step(1);
+      if (e.key === 'ArrowLeft') step(-1);
+    };
+    node.addEventListener('keydown', onKey);
+    return () => node.removeEventListener('keydown', onKey);
+  }, [count, step]);
 
   const current = images[active];
 
@@ -77,13 +69,11 @@ export default function ProductGallery({
     <div className="space-y-3 lg:sticky lg:top-28 lg:self-start">
       <div
         ref={ref}
-        onPointerMove={handlePointerMove}
-        onPointerLeave={reset}
-        style={{ perspective: 1200 }}
-        className="relative"
+        tabIndex={count > 1 ? 0 : -1}
+        aria-roledescription={count > 1 ? 'carousel' : undefined}
+        className="group relative rounded-4xl focus:outline-none focus-visible:ring-4 focus-visible:ring-accent/30"
       >
-        {/* Slowly orbiting sticker — anchored here, not on the tilting
-            card, so it stays put while the image leans. */}
+        {/* Slowly orbiting sticker — anchored here, not on the frame. */}
         {badgeRing && (
           <RotatingBadge
             ring={badgeRing}
@@ -92,23 +82,17 @@ export default function ProductGallery({
             {badgeCenter}
           </RotatingBadge>
         )}
+
         <motion.div
-          style={{ rotateX, rotateY, transformStyle: 'preserve-3d' }}
-          initial={
-            prefersReduced
-              ? { opacity: 0 }
-              : { clipPath: 'inset(0 0 100% 0 round 2.75rem)', opacity: 0 }
-          }
-          animate={
-            prefersReduced
-              ? { opacity: 1 }
-              : { clipPath: 'inset(0 0 0% 0 round 2.75rem)', opacity: 1 }
-          }
-          transition={{ duration: 1.1, ease: EASE }}
-          className="relative aspect-[4/3] overflow-hidden rounded-4xl border border-cream-300/70 bg-cream-200 shadow-lift"
+          // Same keys whatever the motion preference — a key that disappears
+          // from `animate` would snap back to its initial (clipped) value.
+          initial={{ clipPath: 'inset(0 0 100% 0 round 2.75rem)', opacity: 0 }}
+          animate={{ clipPath: 'inset(0 0 0% 0 round 2.75rem)', opacity: 1 }}
+          transition={{ duration: prefersReduced ? 0.01 : 1.1, ease: EASE }}
+          className="relative aspect-[4/5] overflow-hidden rounded-4xl bg-cream-200 shadow-lift sm:aspect-[4/3] lg:aspect-[4/5]"
         >
           {current && !failed[active] ? (
-            <AnimatePresence mode="wait">
+            <AnimatePresence mode="wait" initial={false}>
               <motion.div
                 key={current}
                 initial={{ opacity: 0, scale: 1.04 }}
@@ -123,53 +107,51 @@ export default function ProductGallery({
                 >
                   <Image
                     src={current}
-                    alt={name}
+                    alt={t.imageLabel(name, active + 1)}
                     fill
                     sizes="(max-width: 1024px) 100vw, 600px"
                     onError={() => setFailed((f) => ({ ...f, [active]: true }))}
-                    className="object-cover"
+                    className="object-cover transition-transform duration-[1400ms] ease-expo group-hover:scale-[1.03]"
                     priority
                   />
                 </motion.div>
               </motion.div>
             </AnimatePresence>
           ) : (
-            <div className="grid h-full place-items-center text-6xl opacity-60">
-              🍰
+            <div className="grid h-full place-items-center text-chocolate-300">
+              <Cake className="h-14 w-14" />
             </div>
           )}
 
-          {images.length > 1 && (
-            <span className="absolute bottom-4 right-4 rounded-full bg-cream-50/90 px-3 py-1 text-xs font-medium text-primary shadow-soft backdrop-blur">
-              {active + 1} / {images.length}
-            </span>
-          )}
-
-          {!prefersReduced && (
-            <motion.div
-              aria-hidden
-              className="pointer-events-none absolute inset-0 mix-blend-soft-light"
-              style={{ background: glare }}
-            />
-          )}
-
-          {/* One shine sweep after the reveal — not looped, the photo
-              should stay calm afterwards. */}
-          {!prefersReduced && (
-            <motion.div
-              aria-hidden
-              initial={{ x: '-160%' }}
-              animate={{ x: '420%' }}
-              transition={{ duration: 1.3, ease: 'easeInOut', delay: 1.15 }}
-              className="pointer-events-none absolute inset-y-0 w-1/3 skew-x-12 bg-gradient-to-r from-transparent via-cream-50/40 to-transparent"
-            />
+          {count > 1 && (
+            <>
+              <span className="absolute bottom-4 left-4 rounded-full bg-cream-50/90 px-3 py-1 text-xs font-medium tabular-nums text-primary shadow-soft backdrop-blur">
+                {active + 1} / {count}
+              </span>
+              <button
+                type="button"
+                onClick={() => step(-1)}
+                aria-label={t.galleryPrev}
+                className="btn-icon absolute left-4 top-1/2 -translate-y-1/2 opacity-0 transition-opacity duration-300 group-hover:opacity-100 focus-visible:opacity-100"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => step(1)}
+                aria-label={t.galleryNext}
+                className="btn-icon absolute right-4 top-1/2 -translate-y-1/2 opacity-0 transition-opacity duration-300 group-hover:opacity-100 focus-visible:opacity-100"
+              >
+                <ChevronRight className="h-5 w-5" />
+              </button>
+            </>
           )}
         </motion.div>
       </div>
 
       {/* Thumbnails only make sense from the second image onward. */}
-      {images.length > 1 && (
-        <div className="flex gap-2">
+      {count > 1 && (
+        <div className="flex gap-2 pt-2">
           {images.map((url, index) => (
             <motion.button
               key={url}

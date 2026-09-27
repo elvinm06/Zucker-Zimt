@@ -1,7 +1,8 @@
 'use client';
 
 import { useId, useState } from 'react';
-import { motion, useReducedMotion, type Variants } from 'framer-motion';
+import { motion, type Variants } from 'framer-motion';
+import { useReducedMotion } from '@/lib/motion';
 import { EASE } from './Reveal';
 
 /**
@@ -92,8 +93,9 @@ export default function CakeCutScene({ className }: { className?: string }) {
 
   return (
     <motion.div
+      key={prefersReduced ? "static" : "animated"}
       aria-hidden
-      initial={prefersReduced ? 'cut' : 'whole'}
+      initial={prefersReduced ? "cut" : "whole"}
       whileInView="cut"
       viewport={{ once: true, amount: 0.45 }}
       variants={{

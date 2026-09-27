@@ -1,14 +1,14 @@
 'use client';
 
-import { motion, useReducedMotion, type Variants } from 'framer-motion';
+import { motion, type Variants } from 'framer-motion';
+import { useReducedMotion } from '@/lib/motion';
 import { EASE } from './Reveal';
 
 const word: Variants = {
-  hidden: { y: '115%', opacity: 0, filter: 'blur(12px)', rotateZ: 3 },
+  hidden: { y: '110%', opacity: 0, rotateZ: 2.5 },
   visible: {
     y: '0%',
     opacity: 1,
-    filter: 'blur(0px)',
     rotateZ: 0,
     transition: { duration: 0.9, ease: EASE },
   },
@@ -16,8 +16,9 @@ const word: Variants = {
 
 /**
  * Reveals a line word by word: each word is clipped by its own wrapper and
- * rises out of it while the blur resolves. `trigger` decides whether it runs
- * on mount (hero) or when scrolled into view (section headings).
+ * rises out of it. `trigger` decides whether it runs on mount, when
+ * scrolled into view (section headings), or under the caller's control
+ * (`manual` + `play`, used by the hero to wait for the intro curtain).
  */
 export default function SplitText({
   text,
@@ -25,13 +26,15 @@ export default function SplitText({
   delay = 0,
   stagger = 0.075,
   trigger = 'view',
+  play = true,
   as: Tag = 'span',
 }: {
   text: string;
   className?: string;
   delay?: number;
   stagger?: number;
-  trigger?: 'mount' | 'view';
+  trigger?: 'mount' | 'view' | 'manual';
+  play?: boolean;
   as?: 'span' | 'div';
 }) {
   const prefersReduced = useReducedMotion();
@@ -48,10 +51,12 @@ export default function SplitText({
   const animationProps =
     trigger === 'mount'
       ? { animate: 'visible' as const }
-      : {
-          whileInView: 'visible' as const,
-          viewport: { once: true, amount: 0.4 },
-        };
+      : trigger === 'manual'
+        ? { animate: play ? ('visible' as const) : ('hidden' as const) }
+        : {
+            whileInView: 'visible' as const,
+            viewport: { once: true, amount: 0.4 },
+          };
 
   return (
     <motion.span

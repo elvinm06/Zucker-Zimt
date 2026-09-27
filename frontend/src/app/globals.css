@@ -4,30 +4,64 @@
 
 @layer base {
   html {
+    -webkit-text-size-adjust: 100%;
+    /* Framer measures scroll-linked targets against the scroll container;
+       it wants that container positioned. Harmless for fixed elements. */
+    position: relative;
+  }
+
+  /* Lenis drives the scroll on pointer devices; native smooth scrolling
+     would fight it. Everywhere else (touch, reduced motion) the browser
+     keeps its own smooth anchor jumps. */
+  html.lenis,
+  html.lenis body {
+    height: auto;
+  }
+  .lenis.lenis-smooth {
+    scroll-behavior: auto !important;
+  }
+  .lenis.lenis-smooth [data-lenis-prevent] {
+    overscroll-behavior: contain;
+  }
+  .lenis.lenis-stopped {
+    overflow: hidden;
+  }
+  html:not(.lenis) {
     scroll-behavior: smooth;
   }
 
   /* Keeps anchor targets clear of the sticky header. */
-  section[id] {
-    scroll-margin-top: 6rem;
+  section[id],
+  [data-anchor] {
+    scroll-margin-top: 5.5rem;
   }
 
   body {
     @apply bg-surface text-ink antialiased;
-    /* Very subtle warm grain so large cream areas do not look flat. */
+    /* Very subtle warm cast so large cream areas do not look flat. */
     background-image: radial-gradient(
-        circle at 15% 10%,
-        rgba(232, 184, 136, 0.16),
-        transparent 45%
+        circle at 12% 0%,
+        rgba(232, 184, 136, 0.18),
+        transparent 42%
       ),
-      radial-gradient(circle at 85% 0%, rgba(214, 184, 150, 0.14), transparent 40%);
+      radial-gradient(circle at 90% 8%, rgba(214, 184, 150, 0.14), transparent 38%);
+    font-feature-settings: 'ss01', 'cv11', 'kern';
   }
 
-  /* A fixed background repaints on every scroll frame — on iOS Safari that
-     causes visible jank. Only pin it on larger, pointer-based screens. */
-  @media (min-width: 1024px) {
-    body {
-      background-attachment: fixed;
+  /* Fine paper grain over the whole page — a fixed, tiled SVG noise so it
+     costs one compositor layer, never a repaint. Pointer devices only: the
+     blend is wasted on small screens. */
+  @media (pointer: fine) {
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: 75;
+      pointer-events: none;
+      opacity: 0.05;
+      mix-blend-mode: multiply;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+      background-size: 180px 180px;
     }
   }
 
@@ -47,42 +81,114 @@
   h2,
   h3 {
     @apply font-display;
+    /* Fraunces' soft axis: rounder terminals for the warm, baked feel. */
+    font-variation-settings: 'SOFT' 60, 'WONK' 0;
+  }
+
+  /* Italic display text goes fully soft and "wonky" — the old-style
+     letterforms are the signature of the typeface. */
+  h1 em,
+  h2 em,
+  h3 em,
+  .font-soft {
+    font-variation-settings: 'SOFT' 100, 'WONK' 1;
+  }
+
+  button,
+  [role='button'],
+  summary {
+    cursor: pointer;
+  }
+
+  :focus-visible {
+    outline: 2px solid #c67c3c;
+    outline-offset: 3px;
+    border-radius: 0.25rem;
+  }
+
+  img {
+    user-select: none;
+    -webkit-user-drag: none;
   }
 }
 
 @layer components {
+  /* Page column: one width for every section, so edges line up. */
+  .wrap {
+    @apply mx-auto w-full max-w-[80rem] px-5 sm:px-8 lg:px-10;
+  }
+
+  .btn {
+    @apply inline-flex cursor-pointer select-none items-center justify-center gap-2.5 rounded-full
+           px-6 py-3.5 text-[0.95rem] font-medium leading-none
+           transition-[transform,box-shadow,background-color,color,border-color] duration-500 ease-expo
+           active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-full bg-chocolate-gradient px-7 py-3.5
-           font-medium text-cream-100 shadow-soft transition-all duration-300
-           hover:-translate-y-0.5 hover:shadow-lift active:translate-y-0 active:scale-[0.98]
-           disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0;
+    @apply btn bg-primary text-cream-100 shadow-soft
+           hover:-translate-y-0.5 hover:bg-chocolate-600 hover:shadow-lift;
   }
 
   .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 rounded-full border border-chocolate-200/70
-           bg-cream-50/60 px-7 py-3.5 font-medium text-primary backdrop-blur transition-all duration-300
-           hover:-translate-y-0.5 hover:border-accent/60 hover:bg-cream-200 hover:shadow-soft;
+    @apply btn border border-chocolate-200/70 bg-transparent text-primary
+           hover:border-primary/50 hover:bg-cream-200/70;
+  }
+
+  .btn-light {
+    @apply btn bg-cream-100 text-primary shadow-soft
+           hover:-translate-y-0.5 hover:bg-cream-50 hover:shadow-lift;
+  }
+
+  .btn-outline-light {
+    @apply btn border border-cream-200/30 text-cream-100
+           hover:border-cream-100/70 hover:bg-cream-50/10;
+  }
+
+  /* Round icon-only button (arrows, close, back-to-top). */
+  .btn-icon {
+    @apply grid h-11 w-11 cursor-pointer place-items-center rounded-full border border-line
+           bg-cream-50/70 text-primary backdrop-blur transition-[background-color,border-color,transform]
+           duration-500 ease-expo hover:border-primary/40 hover:bg-cream-200;
   }
 
   .input-field {
-    @apply w-full rounded-2xl border border-chocolate-100 bg-cream-50/80 px-4 py-3 text-ink
-           shadow-inset outline-none transition placeholder:text-muted/70
+    @apply w-full rounded-full border border-chocolate-100 bg-cream-50/80 px-5 py-3 text-ink
+           outline-none transition placeholder:text-muted/70
            focus:border-accent focus:bg-cream-50 focus:ring-4 focus:ring-accent/15;
   }
 
   .card {
-    @apply rounded-3xl border border-cream-300/70 bg-cream-50/90 shadow-soft backdrop-blur-sm;
+    @apply rounded-3xl border border-line bg-cream-50/90 shadow-soft;
   }
 
-  /* Small uppercase label above section headings. */
+  /* Small uppercase label above section headings, with a leading rule. */
   .eyebrow {
-    @apply inline-flex items-center gap-2 rounded-full border border-cream-300 bg-cream-50/80
-           px-4 py-1.5 text-[11px] uppercase tracking-[0.2em] text-chocolate-500 shadow-soft;
+    @apply inline-flex items-center gap-3 text-[11px] font-medium uppercase tracking-[0.22em] text-chocolate-500;
+  }
+  .eyebrow::before {
+    content: '';
+    @apply h-px w-8 bg-accent;
+  }
+  .eyebrow-light {
+    @apply text-cream-300;
+  }
+  .eyebrow-light::before {
+    @apply bg-caramel-300;
+  }
+
+  /* Tiny tracking labels: numbers, counts, meta. */
+  .label-mono {
+    @apply text-[11px] font-medium uppercase tracking-[0.2em] text-muted;
   }
 
   .chip {
-    @apply inline-flex items-center gap-1.5 rounded-full bg-cream-200/80 px-3 py-1.5
-           text-sm text-chocolate-600 ring-1 ring-inset ring-cream-300/80;
+    @apply inline-flex items-center gap-1.5 rounded-full border border-line bg-cream-50/70 px-3.5 py-1.5
+           text-sm text-chocolate-600;
+  }
+
+  .hairline {
+    @apply h-px w-full bg-line;
   }
 
   /* Decorative soft blob used behind hero and CTA sections. */
@@ -91,16 +197,45 @@
   }
 }
 
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  .text-pretty {
+    text-wrap: pretty;
+  }
+  .backface-hidden {
+    backface-visibility: hidden;
+  }
+  .scrollbar-hide {
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  /* Fades the ends of a marquee into the page. */
+  .mask-fade-x {
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
+    mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
+  }
+  /* Outlined display text for the marquee band. */
+  .text-outline {
+    -webkit-text-stroke: 1.5px rgba(155, 111, 67, 0.55);
+    color: transparent;
+  }
+}
+
 /* Respect users who prefer reduced motion. */
 @media (prefers-reduced-motion: reduce) {
   html {
-    scroll-behavior: auto;
+    scroll-behavior: auto !important;
   }
 
   *,
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
 }

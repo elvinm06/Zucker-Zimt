@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion } from 'framer-motion';
+import { useReducedMotion } from '@/lib/motion';
 import { EASE } from './components/motion/Reveal';
 
 /**
@@ -53,14 +54,14 @@ export default function Template({ children }: { children: React.ReactNode }) {
             animate={{ y: '-100%' }}
             transition={{ duration: 0.7, ease: EASE, delay: 0.12 }}
             onAnimationComplete={() => setDone(true)}
-            className="absolute inset-0 rounded-b-[3rem] bg-cream-100"
+            className="absolute inset-0 rounded-b-[4rem] bg-cream-200"
           />
           {/* Front layer — lifts first, revealing the cream behind it. */}
           <motion.div
             initial={{ y: 0 }}
             animate={{ y: '-100%' }}
             transition={{ duration: 0.6, ease: EASE }}
-            className="absolute inset-0 rounded-b-[3rem] bg-chocolate-gradient"
+            className="absolute inset-0 rounded-b-[4rem] bg-espresso"
           />
         </div>
       )}

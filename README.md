@@ -115,8 +115,34 @@ All user-facing copy on the site is **German** (`<html lang="de">`), including t
 backend's error messages — because those are shown directly in the UI. Code comments
 are **English**. Keep this split when writing new components.
 
-## Color palette
+## Design
 
-`primary` #452D19 (dark chocolate) · `secondary` #F5EBDD (beige/cream) ·
-`accent` #C67C3C (warm caramel) · `surface` #FBF6EF · `ink` #2E1D10.
-See [tailwind.config.js](frontend/tailwind.config.js) for the full scale.
+**Palette** — `primary` #452D19 (dark chocolate) · `secondary` #F5EBDD (beige/cream) ·
+`accent` #C67C3C (warm caramel) · `surface` #FBF6EF · `ink` #2E1D10 ·
+`espresso` #1B1009 (dark sections) · `muted` #7A6553 · `line` (hairlines).
+See [tailwind.config.js](frontend/tailwind.config.js) for the full scale and the
+fluid `text-display-*` headline sizes.
+
+**Type** — Fraunces (display, variable with the `SOFT`/`WONK` axes for the
+italics) and DM Sans (body), both loaded through `next/font`.
+
+**Motion** — Framer Motion for every entrance, hover and scroll-linked effect,
+[Lenis](https://lenis.darkroom.engineering/) for inertia scrolling on pointer
+devices. The building blocks live in
+[frontend/src/app/components/motion](frontend/src/app/components/motion):
+
+| Component          | What it does                                                    |
+| ------------------ | --------------------------------------------------------------- |
+| `IntroLoader`      | Once-per-session brand curtain; the hero waits for it to lift    |
+| `SmoothScroll`     | Creates Lenis; `lib/scroll.ts` exposes `scrollToTarget`/`lockScroll` |
+| `Cursor`           | Pointer companion that turns into an "Ansehen" disc over cakes  |
+| `Reveal` / `SplitText` / `Stagger` | Scroll-triggered reveals for blocks, headlines, chips |
+| `VelocityMarquee`  | Scroll-velocity-driven text band                                |
+| `CakeCutScene`     | SVG cake that gets cut when it scrolls into view                |
+
+`Signature.tsx` is the pinned, horizontally scrolling showcase (a snap
+carousel on touch screens). Every effect checks `prefers-reduced-motion` and
+renders its final state instead.
+
+Icons are inline SVG in [icons.tsx](frontend/src/app/components/icons.tsx) —
+no emoji in the UI, including the allergen glyphs.

@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { animate, useInView, useReducedMotion } from 'framer-motion';
+import { animate, useInView } from 'framer-motion';
+import { useReducedMotion } from '@/lib/motion';
 
 /**
  * Counts up to `value` once the element scrolls into view.
@@ -23,7 +24,12 @@ export default function AnimatedNumber({
   const [display, setDisplay] = useState(prefersReduced ? value : 0);
 
   useEffect(() => {
-    if (!inView || prefersReduced) return;
+    // Reduced motion: show the final value, no count-up.
+    if (prefersReduced) {
+      setDisplay(value);
+      return;
+    }
+    if (!inView) return;
 
     const controls = animate(0, value, {
       duration,

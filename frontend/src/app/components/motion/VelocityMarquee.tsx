@@ -5,13 +5,14 @@ import {
   motion,
   useAnimationFrame,
   useMotionValue,
-  useReducedMotion,
   useScroll,
   useSpring,
   useTransform,
   useVelocity,
 } from 'framer-motion';
+import { useReducedMotion } from '@/lib/motion';
 import { useSiteLang } from '../LocaleProvider';
+import LogoMark from '../LogoMark';
 
 /** Keeps `v` inside [min, max) so the four copies loop seamlessly. */
 function wrap(min: number, max: number, v: number) {
@@ -31,18 +32,13 @@ function MarqueeRow({
       {words.map((word, i) => (
         <span key={word} className="flex items-center">
           <span
-            className={`px-5 font-display text-5xl font-semibold italic leading-tight sm:px-7 sm:text-7xl ${
-              (i + offset) % 2 ? 'text-transparent' : 'text-chocolate-300/70'
+            className={`font-soft px-5 font-display text-[clamp(2.75rem,6.5vw,6rem)] font-medium italic leading-tight sm:px-8 ${
+              (i + offset) % 2 ? 'text-outline' : 'text-primary'
             }`}
-            style={
-              (i + offset) % 2
-                ? { WebkitTextStroke: '1.5px rgba(155,111,67,0.45)' }
-                : undefined
-            }
           >
             {word}
           </span>
-          <span className="text-2xl text-caramel-400/80 sm:text-3xl">✦</span>
+          <LogoMark className="h-7 w-7 shrink-0 text-caramel-500 sm:h-9 sm:w-9" />
         </span>
       ))}
     </span>
@@ -58,7 +54,7 @@ function MarqueeRow({
 export default function VelocityMarquee({
   // Percent of the full four-copy track per second. The track is several
   // thousand pixels wide, so small values already read as a steady drift.
-  baseVelocity = -0.5,
+  baseVelocity = -0.45,
 }: {
   baseVelocity?: number;
 }) {
@@ -75,7 +71,7 @@ export default function VelocityMarquee({
   const velocityFactor = useTransform(smoothVelocity, [0, 1200], [0, 4], {
     clamp: false,
   });
-  const skewX = useSpring(useTransform(smoothVelocity, [-1500, 1500], [-9, 9]), {
+  const skewX = useSpring(useTransform(smoothVelocity, [-1500, 1500], [-8, 8]), {
     stiffness: 220,
     damping: 32,
   });
@@ -105,7 +101,7 @@ export default function VelocityMarquee({
   // Static, centered band — no drift, no skew.
   if (prefersReduced) {
     return (
-      <section aria-hidden className="overflow-hidden py-12">
+      <section aria-hidden className="overflow-hidden border-y border-line py-8">
         <div className="flex justify-center">
           <MarqueeRow words={words} />
         </div>
@@ -114,10 +110,10 @@ export default function VelocityMarquee({
   }
 
   return (
-    <section aria-hidden className="relative overflow-hidden py-10 sm:py-14">
+    <section aria-hidden className="relative overflow-hidden py-8 sm:py-12">
       {/* Slight tilt sells the "sticker across the page" look. */}
-      <div className="-mx-[3%] -rotate-[1.2deg]">
-        <div className="border-y border-chocolate-200/40 bg-gradient-to-r from-transparent via-cream-200/70 to-transparent py-5 sm:py-7">
+      <div className="-mx-[3%] -rotate-[1.5deg]">
+        <div className="border-y border-line bg-cream-200/60 py-5 sm:py-7">
           {/* w-max makes the track as wide as its four copies, so the
               percentage `x` moves in track units — without it the flex div
               is only as wide as its parent and the wrap visibly snaps. */}

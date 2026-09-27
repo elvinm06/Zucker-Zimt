@@ -1,7 +1,8 @@
 'use client';
 
 import { useId } from 'react';
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion } from 'framer-motion';
+import { useReducedMotion } from '@/lib/motion';
 
 /**
  * Circular sticker: the ring text slowly orbits the centre content.
@@ -12,10 +13,12 @@ export default function RotatingBadge({
   ring,
   children,
   className,
+  delay = 1.05,
 }: {
   ring: string;
   children: React.ReactNode;
   className?: string;
+  delay?: number;
 }) {
   const prefersReduced = useReducedMotion();
   const id = useId().replace(/:/g, '');
@@ -29,10 +32,10 @@ export default function RotatingBadge({
           : { opacity: 0, scale: 0, rotate: -40 }
       }
       animate={{ opacity: 1, scale: 1, rotate: 0 }}
-      transition={{ type: 'spring', stiffness: 170, damping: 16, delay: 1.05 }}
+      transition={{ type: 'spring', stiffness: 170, damping: 16, delay }}
       className={`pointer-events-none select-none ${className ?? ''}`}
     >
-      <div className="relative aspect-square w-full rounded-full bg-cream-50/95 shadow-lift ring-1 ring-inset ring-cream-300/80 backdrop-blur">
+      <div className="relative aspect-square w-full rounded-full bg-cream-50/95 shadow-lift ring-1 ring-inset ring-line backdrop-blur">
         <motion.svg
           viewBox="0 0 100 100"
           className="absolute inset-0 h-full w-full"
@@ -46,7 +49,7 @@ export default function RotatingBadge({
               d="M 50,50 m -38,0 a 38,38 0 1,1 76,0 a 38,38 0 1,1 -76,0"
             />
           </defs>
-          <text fill="#7B532F" fontSize="9.5" letterSpacing="1.5">
+          <text fill="#7B532F" fontSize="9" letterSpacing="1.6">
             <textPath
               href={`#${id}-ring`}
               textLength="238"
@@ -57,7 +60,7 @@ export default function RotatingBadge({
           </text>
         </motion.svg>
 
-        <span className="absolute inset-0 grid place-items-center px-4 text-center font-display text-[15px] font-semibold leading-tight text-primary">
+        <span className="absolute inset-0 grid place-items-center px-5 text-center font-display text-[15px] font-medium leading-tight text-primary">
           {children}
         </span>
       </div>
