@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useReducedMotion } from '@/lib/motion';
-import { EASE } from './components/motion/Reveal';
+import { EASE } from '../components/motion/Reveal';
 
 /**
  * Survives route changes but resets on a full page load — that is exactly

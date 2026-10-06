@@ -79,9 +79,6 @@ const de = {
   catalogEmptyTitle: 'Noch keine Torten im Katalog',
   catalogEmptyText:
     'Wir stellen gerade unser Sortiment zusammen — schauen Sie bald wieder vorbei.',
-  catalogDownTitle: 'Der Katalog ist gerade nicht erreichbar',
-  catalogDownText:
-    'Bitte versuchen Sie es in Kürze noch einmal oder schreiben Sie uns direkt per WhatsApp.',
   cardCta: 'Zur Torte',
   cursorView: 'Ansehen',
   moreAllergens: (n: number) => `+${n} weitere`,
@@ -228,9 +225,6 @@ const en: Dictionary = {
   catalogEmptyTitle: 'No cakes in the catalogue yet',
   catalogEmptyText:
     'We are putting our selection together — please check back soon.',
-  catalogDownTitle: 'The catalogue is currently unavailable',
-  catalogDownText:
-    'Please try again shortly, or message us directly on WhatsApp.',
   cardCta: 'View cake',
   cursorView: 'View',
   moreAllergens: (n: number) => `+${n} more`,

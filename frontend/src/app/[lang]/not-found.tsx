@@ -1,12 +1,16 @@
+'use client';
+
 import Link from 'next/link';
-import { getDictionary } from '@/lib/locale';
-import Footer from './components/Footer';
-import Header from './components/Header';
-import { ArrowLeft } from './components/icons';
-import LogoMark from './components/LogoMark';
+import { useSiteLang } from '../components/LocaleProvider';
+import Footer from '../components/Footer';
+import Header from '../components/Header';
+import { ArrowLeft } from '../components/icons';
+import LogoMark from '../components/LogoMark';
 
 export default function NotFound() {
-  const t = getDictionary();
+  // not-found receives no route params, so the language comes from the
+  // provider the layout set up.
+  const { t } = useSiteLang();
   return (
     <main className="flex min-h-screen flex-col">
       <Header />

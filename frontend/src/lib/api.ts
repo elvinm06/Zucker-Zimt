@@ -53,8 +53,9 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
 /* -------------------------------------------------------------------------- */
 
 /**
- * Called from a Server Component. `revalidate: 60` means the catalogue is
- * refreshed at most once a minute instead of hitting the DB on every request.
+ * Called from a Server Component. `revalidate: 60` means the catalogue —
+ * and the static page built from it — is refreshed at most once a minute
+ * instead of hitting the DB on every request.
  */
 export async function getProducts(): Promise<Product[]> {
   const res = await fetch(`${BASE}/products`, { next: { revalidate: 60 } });

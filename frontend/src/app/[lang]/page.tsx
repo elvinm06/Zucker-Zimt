@@ -1,37 +1,42 @@
+import { notFound } from 'next/navigation';
 import { getProducts } from '@/lib/api';
 import { getDictionary } from '@/lib/locale';
-import type { Product } from '@/types/product';
-import CatalogGrid from './components/CatalogGrid';
-import CatalogToolbar from './components/CatalogToolbar';
-import { SearchProvider } from './components/SearchProvider';
-import ContactCTA from './components/ContactCTA';
-import FeatureStrip from './components/FeatureStrip';
-import Footer from './components/Footer';
-import Header from './components/Header';
-import Hero from './components/Hero';
-import HowItWorks from './components/HowItWorks';
-import Signature from './components/Signature';
-import IntroLoader from './components/motion/IntroLoader';
-import Reveal from './components/motion/Reveal';
-import SplitText from './components/motion/SplitText';
-import VelocityMarquee from './components/motion/VelocityMarquee';
+import { isSiteLang } from '@/lib/site-i18n';
+import CatalogGrid from '../components/CatalogGrid';
+import CatalogToolbar from '../components/CatalogToolbar';
+import { SearchProvider } from '../components/SearchProvider';
+import ContactCTA from '../components/ContactCTA';
+import FeatureStrip from '../components/FeatureStrip';
+import Footer from '../components/Footer';
+import Header from '../components/Header';
+import Hero from '../components/Hero';
+import HowItWorks from '../components/HowItWorks';
+import Signature from '../components/Signature';
+import IntroLoader from '../components/motion/IntroLoader';
+import Reveal from '../components/motion/Reveal';
+import SplitText from '../components/motion/SplitText';
+import VelocityMarquee from '../components/motion/VelocityMarquee';
 
 /**
  * Server Component — products are fetched on the server (better SEO and a
  * faster first paint); the interactive parts (grid, search, showcase) are
  * client children.
+ *
+ * The page is static and regenerated in the background (see `revalidate` in
+ * `getProducts`). A failed fetch is deliberately not caught: the error aborts
+ * the regeneration, so visitors keep getting the last good page while the
+ * backend is down or waking up. Catching it would cache an empty catalogue
+ * in place of the good page.
  */
-export default async function HomePage() {
-  const t = getDictionary();
-  let products: Product[] = [];
-  let failed = false;
+export default async function HomePage({
+  params,
+}: {
+  params: { lang: string };
+}) {
+  if (!isSiteLang(params.lang)) notFound();
 
-  try {
-    products = await getProducts();
-  } catch {
-    // Keep the page alive when the backend is down: show a notice instead.
-    failed = true;
-  }
+  const t = getDictionary(params.lang);
+  const products = await getProducts();
 
   return (
     <SearchProvider>
@@ -59,26 +64,13 @@ export default async function HomePage() {
             </Reveal>
           </div>
 
-          {failed ? (
-            <div className="mx-auto max-w-md rounded-3xl border border-line bg-cream-50/70 p-10 text-center">
-              <p className="font-display text-2xl text-primary">
-                {t.catalogDownTitle}
-              </p>
-              <p className="mt-2 text-sm leading-relaxed text-muted">
-                {t.catalogDownText}
-              </p>
-            </div>
-          ) : (
-            <>
-              <div className="mb-12">
-                <CatalogToolbar products={products} />
-              </div>
-              <CatalogGrid products={products} />
-            </>
-          )}
+          <div className="mb-12">
+            <CatalogToolbar products={products} />
+          </div>
+          <CatalogGrid products={products} />
         </section>
 
-        {!failed && <Signature products={products} />}
+        <Signature products={products} />
 
         <HowItWorks />
         <ContactCTA />

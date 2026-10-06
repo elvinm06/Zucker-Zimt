@@ -13,7 +13,7 @@ const LocaleContext = createContext<LocaleValue>({
   t: SITE_DICTIONARIES.de,
 });
 
-/** Fed from the layout, which reads the language cookie on the server. */
+/** Fed from the layout, which gets the language from the `[lang]` segment. */
 export function LocaleProvider({
   lang,
   children,

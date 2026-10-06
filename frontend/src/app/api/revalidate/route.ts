@@ -49,9 +49,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ revalidated: false }, { status: 401, headers });
   }
 
-  // Home page (catalogue) and every product detail page.
-  revalidatePath('/');
-  revalidatePath('/torte/[id]', 'page');
+  // Everything under the root layout: the catalogue and every product
+  // detail page, in each language.
+  revalidatePath('/', 'layout');
 
   return NextResponse.json({ revalidated: true }, { headers });
 }

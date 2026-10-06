@@ -8,8 +8,8 @@ import {
   formatPrice,
   orderMessageTemplate,
 } from '@/config/app.config';
-import { getProduct, getProducts, getSettings } from '@/lib/api';
-import { getDictionary, getLocale } from '@/lib/locale';
+import { ApiError, getProduct, getProducts, getSettings } from '@/lib/api';
+import { getDictionary, toLocale } from '@/lib/locale';
 import { allergenMeta } from '@/lib/allergens';
 import type { Product } from '@/types/product';
 import { TelegramIcon, WhatsAppIcon } from '@/app/components/BrandIcons';
@@ -26,15 +26,30 @@ import Reveal from '@/app/components/motion/Reveal';
 import SplitText from '@/app/components/motion/SplitText';
 import { Stagger, StaggerItem } from '@/app/components/motion/Stagger';
 
-/** Returns null instead of throwing, so a missing id renders the 404 page. */
+/**
+ * Returns null for a missing id, so it renders the 404 page.
+ *
+ * Only a "not there" answer from the API counts. A backend that is down or
+ * still waking up must keep failing: this page is cached, and swallowing
+ * the error would replace a good page with a cached 404.
+ */
 async function loadProduct(id: string): Promise<Product | null> {
   try {
     const product = await getProduct(id);
     // Hidden products must not be reachable through a direct link either.
     return product.is_active ? product : null;
-  } catch {
-    return null;
+  } catch (error) {
+    // 400: the id is not a valid UUID; 404: no such product.
+    if (error instanceof ApiError && [400, 404].includes(error.status)) {
+      return null;
+    }
+    throw error;
   }
+}
+
+/** Product pages are generated on first visit and cached from then on. */
+export function generateStaticParams() {
+  return [];
 }
 
 export async function generateMetadata({
@@ -59,7 +74,7 @@ export async function generateMetadata({
 export default async function ProductPage({
   params,
 }: {
-  params: { id: string };
+  params: { lang: string; id: string };
 }) {
   // Fire all three backend calls at once instead of awaiting them in series —
   // on a slow/cold backend this cuts the page's wait from 3 round-trips to 1.
@@ -71,8 +86,8 @@ export default async function ProductPage({
   if (!product) notFound();
 
   const settings = settingsRaw ?? FALLBACK_SETTINGS;
-  const t = getDictionary();
-  const lang = getLocale();
+  const t = getDictionary(params.lang);
+  const lang = toLocale(params.lang);
   const price = formatPrice(product.price);
   const whatsappHref = buildWhatsAppLink(settings, product.name, lang);
   const telegramHref = buildTelegramLink(settings, product.name, lang);
