@@ -25,7 +25,7 @@ const useIsomorphicLayoutEffect =
 const SEEN_KEY = 'bakery_intro_seen';
 
 /** How long the brand frame holds before the curtain lifts. */
-const HOLD_MS = 2400;
+const HOLD_MS = 1600;
 
 /**
  * Jumps to the very top, ignoring the smooth easing declared for <html> —
@@ -47,7 +47,7 @@ const letter: Variants = {
   visible: (i: number) => ({
     y: '0%',
     rotateZ: 0,
-    transition: { duration: 0.9, ease: EASE, delay: 0.45 + i * 0.035 },
+    transition: { duration: 0.7, ease: EASE, delay: 0.2 + i * 0.03 },
   }),
 };
 
@@ -192,7 +192,7 @@ export default function IntroLoader() {
                   type: 'spring',
                   stiffness: 180,
                   damping: 16,
-                  delay: 0.15,
+                  delay: 0.05,
                 }}
                 className="mx-auto mb-8 block h-14 w-14 text-caramel-300 sm:h-16 sm:w-16"
               >
@@ -229,14 +229,14 @@ export default function IntroLoader() {
               <motion.div
                 initial={{ scaleX: 0 }}
                 animate={{ scaleX: 1 }}
-                transition={{ duration: 0.9, ease: EASE, delay: 1.1 }}
+                transition={{ duration: 0.7, ease: EASE, delay: 0.6 }}
                 className="mx-auto mt-7 h-px w-24 bg-caramel-gradient"
               />
 
               <motion.p
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, ease: EASE, delay: 1.25 }}
+                transition={{ duration: 0.6, ease: EASE, delay: 0.7 }}
                 className="mt-5 text-[11px] uppercase tracking-[0.4em] text-cream-300/80"
               >
                 {t.konditorei}
@@ -249,7 +249,7 @@ export default function IntroLoader() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0, transition: { duration: 0.2 } }}
-            transition={{ delay: 0.5, duration: 0.6 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
             className="absolute inset-x-6 bottom-6 flex items-end justify-between text-[11px] uppercase tracking-[0.25em] text-cream-300/60 sm:inset-x-10 sm:bottom-8"
           >
             <Counter />
